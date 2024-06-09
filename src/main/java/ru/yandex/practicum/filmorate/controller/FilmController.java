@@ -23,7 +23,7 @@ public class FilmController {
     public Film addFilm(@RequestBody @Valid Film film) {
         String validationErrorMessage = validationBaseMessage;
         if (film.getName() == null || film.getName().length() == 0) {
-            validationErrorMessage += "Название не может быть пустым";
+            validationErrorMessage += "Название фильма не может быть пустым";
 
             log.error(validationErrorMessage);
             throw new ValidationException(validationErrorMessage);
