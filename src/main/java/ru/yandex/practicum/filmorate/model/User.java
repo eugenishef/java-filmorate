@@ -1,20 +1,27 @@
 package ru.yandex.practicum.filmorate.model;
 
-import javax.validation.constraints.*;
-
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import java.time.LocalDate;
 
 @Data
+@EqualsAndHashCode(of = {"email"})
 public class User {
-    private int id;
-    @Email(message = "Электронная почта должна быть корректной и содержать символ @")
+    private long id;
     private String email;
-    @NotBlank(message = "Логин не может быть пустым")
-    @Pattern(regexp = "\\S+", message = "Логин не должен содержать пробелы")
     private String login;
     private String name;
-    @PastOrPresent(message = "Дата рождения не может быть в будущем")
     private LocalDate birthday;
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "id=" + id +
+                ", email='" + email + '\'' +
+                ", login='" + login + '\'' +
+                ", name='" + name + '\'' +
+                ", birthday=" + birthday +
+                '}';
+    }
 }

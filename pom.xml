@@ -6,7 +6,7 @@
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
 		<version>3.2.4</version>
-		<relativePath/> <!-- lookup parent from repository -->
+		<relativePath/>
 	</parent>
 	<groupId>ru.yandex.practicum</groupId>
 	<artifactId>filmorate</artifactId>
@@ -15,11 +15,19 @@
 	<description>filmorate</description>
 	<properties>
 		<java.version>21</java.version>
+		<maven-checkstyle-plugin.version>3.3.1</maven-checkstyle-plugin.version>
+		<maven-compiler-plugin.version>3.11.0</maven-compiler-plugin.version>
+		<maven-resources-plugin.version>3.3.1</maven-resources-plugin.version>
 	</properties>
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.maven.plugins</groupId>
+			<artifactId>maven-checkstyle-plugin</artifactId>
+			<version>3.3.1</version>
 		</dependency>
 		<dependency>
 			<groupId>org.projectlombok</groupId>
@@ -47,6 +55,27 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>${maven-compiler-plugin.version}</version>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-checkstyle-plugin</artifactId>
+				<version>${maven-checkstyle-plugin.version}</version>
+				<configuration>
+					<configLocation>checkstyle.xml</configLocation>
+				</configuration>
+				<executions>
+					<execution>
+						<goals>
+							<goal>check</goal>
+						</goals>
+						<phase>compile</phase>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>
