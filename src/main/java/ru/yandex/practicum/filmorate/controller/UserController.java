@@ -22,25 +22,25 @@ public class UserController {
     public User createUser(@Valid @RequestBody User user) {
         String validationErrorMessage = validationBaseMessage;
         if (user.getEmail() == null) {
-            validationErrorMessage += "Имейл должен быть указан";
+            validationErrorMessage += "E-mail должен быть указан";
 
             log.error(validationErrorMessage);
             throw new ValidationException(validationErrorMessage);
         }
         if (!user.getEmail().contains("@")) {
-            validationErrorMessage += "Имейл должен содержать символ @";
+            validationErrorMessage += "E-mail должен содержать символ @";
 
             log.error(validationErrorMessage);
             throw new ValidationException(validationErrorMessage);
         }
         if (user.getLogin() == null) {
-            validationErrorMessage += "Логин не может быть пустым";
+            validationErrorMessage += "Login(имя пользователя) не может быть пустым";
 
             log.error(validationErrorMessage);
             throw new ValidationException(validationErrorMessage);
         }
         if (user.getLogin().contains(" ")) {
-            validationErrorMessage += "Логин не должен содержать пробелы";
+            validationErrorMessage += "Login(имя пользователя) не должен содержать пробелы";
 
             log.error(validationErrorMessage);
             throw new ValidationException(validationErrorMessage);
