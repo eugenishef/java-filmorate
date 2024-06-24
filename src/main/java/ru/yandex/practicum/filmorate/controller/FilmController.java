@@ -15,6 +15,9 @@ public class FilmController {
     private final FilmStorage filmStorage;
     private final FilmService filmService;
 
+    private static final String ID_PATH = "/{id}";
+    private static final String LIKE_PATH = ID_PATH + "/like/{userId}";
+
     @Autowired
     public FilmController(FilmStorage filmStorage, FilmService filmService) {
         this.filmStorage = filmStorage;
@@ -36,17 +39,17 @@ public class FilmController {
         return filmStorage.getAllFilms();
     }
 
-    @GetMapping("/{id}")
+    @GetMapping(ID_PATH)
     public Film getFilmById(@PathVariable long filmId) {
         return filmService.getFilmById(filmId);
     }
 
-    @PutMapping("/{id}/like/{userId}")
+    @PutMapping(LIKE_PATH)
     public void likeFilm(@PathVariable long id, @PathVariable long userId) {
         filmService.addLike(id, userId);
     }
 
-    @DeleteMapping("/{id}/like/{userId}")
+    @DeleteMapping(LIKE_PATH)
     public void dislikeFilm(@PathVariable long id, @PathVariable long userId) {
         filmService.removeLike(id, userId);
     }
