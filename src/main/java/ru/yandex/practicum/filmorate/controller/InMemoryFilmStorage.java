@@ -22,31 +22,41 @@ public class InMemoryFilmStorage implements FilmStorage {
 
     @Override
     public Film addFilm(@Valid Film film) {
-        String validationErrorMessage = validationBaseMessage;
-        if (film.getName() == null || film.getName().length() == 0) {
-            validationErrorMessage += "Название фильма не может быть пустым";
+        StringBuilder validationErrorMessage = new StringBuilder(validationBaseMessage);
+        boolean isValid = true;
 
-            log.error(validationErrorMessage);
+        if (film.getName() == null || film.getName().length() == 0) {
+            validationErrorMessage.append("Название фильма не может быть пустым");
+            isValid = false;
+
+            log.error(String.valueOf(validationErrorMessage));
             throw new ValidationException(validationErrorMessage);
 
         }
         if (film.getDescription().length() > 200) {
-            validationErrorMessage += "Максимальная длина описания — 200 символов";
+            validationErrorMessage.append("Максимальная длина описания — 200 символов");
+            isValid = false;
 
-            log.error(validationErrorMessage);
+            log.error(String.valueOf(validationErrorMessage));
             throw new ValidationException(validationErrorMessage);
         }
         if (film.getReleaseDate().isBefore(EARLIEST_RELEASE_DATE)) {
-            validationErrorMessage += "Дата релиза — не раньше 28 декабря 1895 года";
+            validationErrorMessage.append("Дата релиза — не раньше 28 декабря 1895 года");
+            isValid = false;
 
-            log.error(validationErrorMessage);
+            log.error(String.valueOf(validationErrorMessage));
             throw new ValidationException(validationErrorMessage);
         }
         if (film.getDuration() <= 0) {
-            validationErrorMessage += "Продолжительность фильма должна быть положительным числом";
+            validationErrorMessage.append("Продолжительность фильма должна быть положительным числом");
+            isValid = false;
 
-            log.error(validationErrorMessage);
+            log.error(String.valueOf(validationErrorMessage));
             throw new ValidationException(validationErrorMessage);
+        }
+
+        if (!isValid) {
+            throw new ValidationException(new StringBuilder(validationErrorMessage.toString()));
         }
 
         film.setId(IdGenerator.getNextId(films, Film::getId));

@@ -1,5 +1,7 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
@@ -13,38 +15,61 @@ import java.util.List;
 
 @Component
 public class InMemoryUserStorage implements UserStorage {
+    private static final Logger log = LoggerFactory.getLogger(InMemoryUserStorage.class);
     private final List<User> users = new ArrayList<>();
     private String validationBaseMessage = "Валидация при создании пользователя не пройдена: ";
 
     @Override
     public User createUser(@Valid User user) {
-        String validationErrorMessage = validationBaseMessage;
+        StringBuilder validationErrorMessage = new StringBuilder(validationBaseMessage);
+        boolean isValid = true;
+
         if (user.getEmail() == null) {
-            validationErrorMessage += "E-mail должен быть указан";
+            validationErrorMessage.append("E-mail должен быть указан");
+            isValid = false;
+
+            log.error(String.valueOf(validationErrorMessage));
             throw new ValidationException(validationErrorMessage);
         }
-        if (!user.getEmail().contains("@")) {
-            validationErrorMessage += "E-mail должен содержать символ @";
+        if (user.getEmail() != null && !user.getEmail().contains("@")) {
+            validationErrorMessage.append("E-mail должен содержать символ @; ");
+            isValid = false;
+
+            log.error(String.valueOf(validationErrorMessage));
             throw new ValidationException(validationErrorMessage);
         }
         if (user.getLogin() == null) {
-            validationErrorMessage += "Login(имя пользователя) не может быть пустым";
+            validationErrorMessage.append("Login(имя пользователя) не может быть пустым; ");
+            isValid = false;
+
+            log.error(String.valueOf(validationErrorMessage));
             throw new ValidationException(validationErrorMessage);
         }
-        if (user.getLogin().contains(" ")) {
-            validationErrorMessage += "Login(имя пользователя) не должен содержать пробелы";
+        if (user.getLogin() != null && user.getLogin().contains(" ")) {
+            validationErrorMessage.append("Login(имя пользователя) не должен содержать пробелы; ");
+            isValid = false;
+
+            log.error(String.valueOf(validationErrorMessage));
             throw new ValidationException(validationErrorMessage);
         }
         if (user.getName() == null) {
             user.setName(user.getLogin());
         }
         if (user.getBirthday() != null && user.getBirthday().isAfter(LocalDate.now())) {
-            validationErrorMessage += "Дата рождения не может быть в будущем";
+            validationErrorMessage.append("Дата рождения не может быть в будущем; ");
+            isValid = false;
+
+            log.error(String.valueOf(validationErrorMessage));
             throw new ValidationException(validationErrorMessage);
+        }
+
+        if (!isValid) {
+            throw new ValidationException(new StringBuilder(validationErrorMessage.toString()));
         }
 
         user.setId(IdGenerator.getNextId(users, User::getId));
         users.add(user);
+        log.info("Добавлен новый пользователь: {}", user);
         return user;
     }
 
