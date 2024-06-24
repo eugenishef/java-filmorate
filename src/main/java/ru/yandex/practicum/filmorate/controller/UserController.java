@@ -1,84 +1,89 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.util.IdGenerator;
+import ru.yandex.practicum.filmorate.service.UserService;
+import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import javax.validation.Valid;
-import java.time.LocalDate;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RestController
 @RequestMapping("/users")
 public class UserController {
-    private final List<User> users = new ArrayList<>();
-    private String validationBaseMessage = "Валидация при создании пользователя не пройдена: ";
+    private final UserStorage userStorage;
+    private final UserService userService;
+
+    @Autowired
+    public UserController(UserStorage userStorage, UserService userService) {
+        this.userStorage = userStorage;
+        this.userService = userService;
+    }
 
     @PostMapping
-    public User createUser(@Valid @RequestBody User user) {
-        String validationErrorMessage = validationBaseMessage;
-        if (user.getEmail() == null) {
-            validationErrorMessage += "E-mail должен быть указан";
-
-            log.error(validationErrorMessage);
-            throw new ValidationException(validationErrorMessage);
-        }
-        if (!user.getEmail().contains("@")) {
-            validationErrorMessage += "E-mail должен содержать символ @";
-
-            log.error(validationErrorMessage);
-            throw new ValidationException(validationErrorMessage);
-        }
-        if (user.getLogin() == null) {
-            validationErrorMessage += "Login(имя пользователя) не может быть пустым";
-
-            log.error(validationErrorMessage);
-            throw new ValidationException(validationErrorMessage);
-        }
-        if (user.getLogin().contains(" ")) {
-            validationErrorMessage += "Login(имя пользователя) не должен содержать пробелы";
-
-            log.error(validationErrorMessage);
-            throw new ValidationException(validationErrorMessage);
-        }
-        if (user.getName() == null) {
-            log.info("Пользователь не указал имя и данные были автоматически подставлены из поля login");
-            user.setName(user.getLogin());
-        }
-        if (user.getBirthday() != null && user.getBirthday().isAfter(LocalDate.now())) {
-            validationErrorMessage += "Дата рождения не может быть в будущем";
-            log.error(validationErrorMessage);
-            throw new ValidationException(validationErrorMessage);
-        }
-
-        user.setId(IdGenerator.getNextId(users, User::getId));
-        users.add(user);
-        log.info("Добавлен новый пользователь: {}", user);
-        return user;
+    public ResponseEntity<User> createUser(@Valid @RequestBody User user) {
+        User createdUser = userStorage.createUser(user);
+        return new ResponseEntity<>(createdUser, HttpStatus.CREATED);
     }
 
     @PutMapping
-    public User updateUser(@RequestBody User user) {
-        String validationErrorMessage = "\"Пользователь с id: \" + user.getId() + \" не найден\"";
-        User oldUser = null;
-        for (int i = 0; i < users.size(); i++) {
-            if (users.get(i).getId() == user.getId()) {
-                oldUser = users.get(i);
-                users.set(i, user);
-                log.info("Пользовательские данные обновлены. Старые данные: {}, Новые данные: {}", oldUser, user);
-                return user;
-            }
+    public ResponseEntity<User> updateUser(@RequestBody User user) {
+        try {
+            User updatedUser = userStorage.updateUser(user);
+            return new ResponseEntity<>(updatedUser, HttpStatus.OK);
+        } catch(IllegalArgumentException e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
-        log.error(validationErrorMessage);
-        throw new IllegalArgumentException(validationErrorMessage);
+
     }
 
     @GetMapping
     public List<User> getAllUsers() {
-        return users;
+        return  userStorage.getAllUsers();
+    }
+
+    @GetMapping("/{id}")
+    public User getUserById(@PathVariable long id) {
+        return userService.getUserById(id);
+    }
+
+    @PutMapping("/{id}/friends/{friendId}")
+    public ResponseEntity<Void> addFriend(@PathVariable int id, @PathVariable int friendId) {
+        try {
+            userService.addFriend(id, friendId);
+            return new ResponseEntity<>(HttpStatus.OK);
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @DeleteMapping("/{id}/friends/{friendId}")
+    public void deleteFriend(@PathVariable int id, @PathVariable int friendId) {
+        userService.removeFriend(id, friendId);
+    }
+
+    @GetMapping("/{id}/friends")
+    public List<User> getUserFriends(@PathVariable int id) {
+        User user = userService.getUserById(id);
+
+        if (user == null) {
+            return Collections.emptyList();
+        }
+
+        return user.getFriends().stream()
+                .map(userService::getUserById)
+                .collect(Collectors.toList());
+    }
+
+    @GetMapping("/{id}/friends/common/{otherId}")
+    public List<User> getCommonFriends(@PathVariable int id, @PathVariable int otherId) {
+        return userService.getCommonFriends(id, otherId);
     }
 }

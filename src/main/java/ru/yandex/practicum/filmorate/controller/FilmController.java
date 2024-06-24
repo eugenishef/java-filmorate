@@ -1,73 +1,58 @@
 package ru.yandex.practicum.filmorate.controller;
 
-import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.util.IdGenerator;
+import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 
 import javax.validation.Valid;
-import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 
-@Slf4j
 @RestController
 @RequestMapping("/films")
 public class FilmController {
-    private List<Film> films = new ArrayList<>();
-    private static final LocalDate EARLIEST_RELEASE_DATE = LocalDate.of(1895, 12, 28);
-    private String validationBaseMessage = "Валидация при добавлении фильма не пройдена: ";
+    private final FilmStorage filmStorage;
+    private final FilmService filmService;
+
+    @Autowired
+    public FilmController(FilmStorage filmStorage, FilmService filmService) {
+        this.filmStorage = filmStorage;
+        this.filmService = filmService;
+    }
 
     @PostMapping
-    public Film addFilm(@RequestBody @Valid Film film) {
-        String validationErrorMessage = validationBaseMessage;
-        if (film.getName() == null || film.getName().length() == 0) {
-            validationErrorMessage += "Название фильма не может быть пустым";
-
-            log.error(validationErrorMessage);
-            throw new ValidationException(validationErrorMessage);
-
-        }
-        if (film.getDescription().length() > 200) {
-            validationErrorMessage += "Максимальная длина описания — 200 символов";
-
-            log.error(validationErrorMessage);
-            throw new ValidationException(validationErrorMessage);
-        }
-        if (film.getReleaseDate().isBefore(EARLIEST_RELEASE_DATE)) {
-            validationErrorMessage += "Дата релиза — не раньше 28 декабря 1895 года";
-
-            log.error(validationErrorMessage);
-            throw new ValidationException(validationErrorMessage);
-        }
-        if (film.getDuration() <= 0) {
-            validationErrorMessage += "Продолжительность фильма должна быть положительным числом";
-
-            log.error(validationErrorMessage);
-            throw new ValidationException(validationErrorMessage);
-        }
-
-        film.setId(IdGenerator.getNextId(films, Film::getId));
-        films.add(film);
-        log.info("Добавлен новый фильм: {}", film);
-        return film;
+    public Film addFilm(@Valid @RequestBody Film film) {
+        return filmStorage.addFilm(film);
     }
 
     @PutMapping
     public Film updateFilm(@RequestBody Film film) {
-        for (int i = 0; i < films.size(); i++) {
-            if (films.get(i).getId() == film.getId()) {
-                films.set(i, film);
-                log.info("Фильм c id {} успешно обновлен", film.getId());
-                return film;
-            }
-        }
-        throw new IllegalArgumentException("Фильм с id: " + film.getId() + " не найден");
+        return filmStorage.updateFilm(film);
     }
 
     @GetMapping
     public List<Film> getAllFilms() {
-        return films;
+        return filmStorage.getAllFilms();
+    }
+
+    @GetMapping("/{id}")
+    public Film getFilmById(@PathVariable long filmId) {
+        return filmService.getFilmById(filmId);
+    }
+
+    @PutMapping("/{id}/like/{userId}")
+    public void likeFilm(@PathVariable long id, @PathVariable long userId) {
+        filmService.addLike(id, userId);
+    }
+
+    @DeleteMapping("/{id}/like/{userId}")
+    public void dislikeFilm(@PathVariable long id, @PathVariable long userId) {
+        filmService.removeLike(id, userId);
+    }
+
+    @GetMapping("/popular")
+    public List<Film> getPopularFilms(@RequestParam(defaultValue = "10") int count) {
+        return filmService.topTenPopularFilms(count);
     }
 }
