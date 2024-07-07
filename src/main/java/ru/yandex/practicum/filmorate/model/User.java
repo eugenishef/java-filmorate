@@ -25,7 +25,7 @@ public class User {
                 ", login='" + login + '\'' +
                 ", name='" + name + '\'' +
                 ", birthday=" + birthday +
-                ", friends=" + friends + '\'' +
+                ", friends=" + friends +
                 '}';
     }
 }
