@@ -16,6 +16,8 @@ public class Film {
     private LocalDate releaseDate;
     private int duration;
     private Set<Long> likes = new HashSet<>();
+    private Set<String> genres = new HashSet<>();
+    private String mpaRating;
 
     @Override
     public String toString() {
@@ -25,6 +27,8 @@ public class Film {
                 ", description='" + description + '\'' +
                 ", releaseDate=" + releaseDate +
                 ", duration=" + duration +
+                ", genres=" + genres +
+                ", mpaRating='" + mpaRating + '\'' +
                 '}';
     }
 }
