@@ -19,11 +19,11 @@
 SELECT * FROM Films;
 ```
 ### Получение всех пользователей:
-```
+```sql
 SELECT * FROM Users;
 ```
 ### Получение топ N наиболее популярных фильмов:
-```
+```sql
 SELECT f.*, COUNT(l.filmId) as likeCount
 FROM Films f
 LEFT JOIN Likes l ON f.id = l.filmId
@@ -32,7 +32,7 @@ ORDER BY likeCount DESC
 LIMIT N;
 ```
 ### Получение списка общих друзей двух пользователей:
-```
+```sql
 SELECT u.*
 FROM Users u
 JOIN Friendships f1 ON u.id = f1.friendId AND f1.userId = :userId1 AND f1.status = 'CONFIRMED'
