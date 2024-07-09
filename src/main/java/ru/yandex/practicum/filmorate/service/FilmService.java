@@ -1,12 +1,14 @@
 package ru.yandex.practicum.filmorate.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -14,37 +16,23 @@ public class FilmService {
     private final FilmStorage filmStorage;
 
     @Autowired
-    public FilmService(FilmStorage filmStorage) {
+    public FilmService(@Qualifier("filmDbStorage") FilmStorage filmStorage) {
         this.filmStorage = filmStorage;
     }
 
-    public void addLike(long filmId, long userId) {
-        Film film = filmStorage.getFilmById(filmId);
-
-        if (film != null && !film.getLikes().contains(userId)) {
-            film.getLikes().add(userId);
-        }
+    public Film createFilm(Film film) {
+        return filmStorage.addFilm(film);
     }
 
-    public void removeLike(long filmId, long userId) {
-        Film film = filmStorage.getFilmById(filmId);
-
-        if (film != null) {
-            film.getLikes().remove(userId);
-        }
+    public Film updateFilm(Film film) {
+        return filmStorage.updateFilm(film);
     }
 
-    public List<Film> topTenPopularFilms(int count) {
-        return filmStorage.getAllFilms().stream()
-                .sorted((f1, f2) -> f2.getLikes().size() - f1.getLikes().size())
-                .limit(count)
-                .collect(Collectors.toList());
+    public Optional<Film> getFilmById(int id) {
+        return filmStorage.getFilmById(id);
     }
 
-    public Film getFilmById(long filmId) {
-        return filmStorage.getAllFilms().stream()
-                .filter(film -> film.getId() == filmId)
-                .findFirst()
-                .orElseThrow(() -> new NotFoundException("Фильм с id: " + filmId + " не найден"));
+    public List<Film> getAllFilms() {
+        return filmStorage.getAllFilms();
     }
 }

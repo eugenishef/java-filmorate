@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
@@ -8,59 +9,30 @@ import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class UserService {
     private final UserStorage userStorage;
 
     @Autowired
-    public UserService(UserStorage userStorage) {
+    public UserService(@Qualifier("userDbStorage") UserStorage userStorage) {
         this.userStorage = userStorage;
     }
 
-    public void addFriend(int userId, int friendId) {
-        User user = userStorage.getUserById(userId);
-        User friend = userStorage.getUserById(friendId);
-
-        if (user != null && friend != null) {
-            user.getFriends()
-                    .add(friendId);
-            friend.getFriends()
-                    .add(userId);
-        }
+    public User createUser(User user) {
+        return userStorage.createUser(user);
     }
 
-    public void removeFriend(int userId, int friendId) {
-        User user = userStorage.getUserById(userId);
-        User friend = userStorage.getUserById(friendId);
-
-        if (user != null && friend != null) {
-            user.getFriends()
-                    .remove(friendId);
-            friend.getFriends()
-                    .remove(userId);
-        }
+    public User updateUser(User user) {
+        return userStorage.updateUser(user);
     }
 
-    public List<User> getCommonFriends(int userId, int otherUserId) {
-        User user = userStorage.getUserById(userId);
-        User otherUser = userStorage.getUserById(otherUserId);
-        List<User> commonFriends = new ArrayList<>();
-
-        if (user != null && otherUser != null) {
-            for (Integer friendId : user.getFriends()) {
-                if (otherUser.getFriends().contains(friendId)) {
-                    commonFriends.add(userStorage.getUserById(friendId));
-                }
-            }
-        }
-        return commonFriends;
+    public Optional<User> getUserById(int id) {
+        return userStorage.getUserById(id);
     }
 
-    public User getUserById(long userId) {
-        return userStorage.getAllUsers().stream()
-                .filter(user -> user.getId() == userId)
-                .findFirst()
-                .orElseThrow(() -> new NotFoundException("Пользователь с id: " + userId + " не найден"));
+    public List<User> getAllUsers() {
+        return userStorage.getAllUsers();
     }
 }
