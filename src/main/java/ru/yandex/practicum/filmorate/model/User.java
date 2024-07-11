@@ -1,9 +1,7 @@
 package ru.yandex.practicum.filmorate.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDate;
 import java.util.HashSet;
@@ -13,11 +11,12 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(of = {"email"})
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class User {
-    private long id;
-    private String email;
-    private String login;
-    private String name;
-    private LocalDate birthday;
-    private Set<Integer> friends = new HashSet<>();
+    long id;
+    String email;
+    String login;
+    String name;
+    LocalDate birthday;
+    Set<Integer> friends = new HashSet<>();
 }

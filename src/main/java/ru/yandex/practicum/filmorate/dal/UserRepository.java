@@ -1,5 +1,7 @@
 package ru.yandex.practicum.filmorate.dal;
 
+import lombok.AccessLevel;
+import lombok.experimental.FieldDefaults;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
@@ -10,9 +12,10 @@ import ru.yandex.practicum.filmorate.dal.mappers.UserRowMapper;
 import java.util.List;
 
 @Repository
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class UserRepository {
-    private final JdbcTemplate jdbc;
-    private final RowMapper<User> userRowMapper;
+    final JdbcTemplate jdbc;
+    final RowMapper<User> userRowMapper;
 
     public UserRepository(JdbcTemplate jdbc, UserRowMapper userRowMapper) {
         this.jdbc = jdbc;

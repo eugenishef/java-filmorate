@@ -1,5 +1,7 @@
 package ru.yandex.practicum.filmorate.service;
 
+import lombok.AccessLevel;
+import lombok.experimental.FieldDefaults;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
@@ -11,8 +13,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class UserService {
-    private final UserRepository userRepository;
+    final UserRepository userRepository;
 
     @Autowired
     public UserService(@Qualifier("userRepository") UserRepository userRepository) {

@@ -1,5 +1,7 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import lombok.AccessLevel;
+import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -13,13 +15,14 @@ import java.util.List;
 
 @Slf4j
 @RestController
+@FieldDefaults(level = AccessLevel.PRIVATE)
 @RequestMapping("/users")
 public class UserController {
 
-    private final UserService userService;
+    final UserService userService;
 
-    private static final String FRIENDS_PATH = "/{id}/friends/{friendId}";
-    private static final String USER_ID_PATH = "/{id}";
+    static final String FRIENDS_PATH = "/{id}/friends/{friendId}";
+    static final String USER_ID_PATH = "/{id}";
 
     @Autowired
     public UserController(UserService userService) {

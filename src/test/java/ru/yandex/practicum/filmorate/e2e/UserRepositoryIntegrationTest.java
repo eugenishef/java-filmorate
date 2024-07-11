@@ -1,5 +1,7 @@
 package ru.yandex.practicum.filmorate.e2e;
 
+import lombok.AccessLevel;
+import lombok.experimental.FieldDefaults;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -19,10 +21,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 @SpringJUnitConfig
 @JdbcTest
 @AutoConfigureTestDatabase
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class UserRepositoryIntegrationTest {
 
     @Autowired
-    private UserRepository userRepository;
+    UserRepository userRepository;
 
     @AfterEach
     public void tearDown() {
