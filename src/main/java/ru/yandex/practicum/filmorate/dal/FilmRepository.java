@@ -1,5 +1,7 @@
 package ru.yandex.practicum.filmorate.dal;
 
+import lombok.AccessLevel;
+import lombok.experimental.FieldDefaults;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -9,10 +11,11 @@ import ru.yandex.practicum.filmorate.model.Film;
 import java.util.List;
 
 @Repository
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class FilmRepository {
 
-    private final JdbcTemplate jdbc;
-    private final FilmRowMapper filmRowMapper;
+    final JdbcTemplate jdbc;
+    final FilmRowMapper filmRowMapper;
 
     @Autowired
     public FilmRepository(JdbcTemplate jdbcTemplate, FilmRowMapper filmRowMapper) {

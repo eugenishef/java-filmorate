@@ -1,9 +1,7 @@
 package ru.yandex.practicum.filmorate.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDate;
 import java.util.HashSet;
@@ -13,13 +11,14 @@ import java.util.Set;
 @EqualsAndHashCode(of = {"id"})
 @NoArgsConstructor
 @AllArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class Film {
-    private long id;
-    private String name;
-    private String description;
-    private LocalDate releaseDate;
-    private int duration;
-    private Set<Long> likes = new HashSet<>();
-    private Set<Genre> genres = new HashSet<>();
-    private String mpaRating;
+    long id;
+    String name;
+    String description;
+    LocalDate releaseDate;
+    int duration;
+    Set<Long> likes = new HashSet<>();
+    Set<Genre> genres = new HashSet<>();
+    String mpaRating;
 }

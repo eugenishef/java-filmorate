@@ -1,5 +1,7 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import lombok.AccessLevel;
+import lombok.experimental.FieldDefaults;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,12 +13,13 @@ import javax.validation.Valid;
 import java.util.List;
 
 @RestController
+@FieldDefaults(level = AccessLevel.PRIVATE)
 @RequestMapping("/films")
 public class FilmController {
-    private final FilmService filmService;
+    final FilmService filmService;
 
-    private static final String ID_PATH = "/{id}";
-    private static final String LIKE_PATH = ID_PATH + "/like/{userId}";
+    static final String ID_PATH = "/{id}";
+    static final String LIKE_PATH = ID_PATH + "/like/{userId}";
 
     @Autowired
     public FilmController(FilmService filmService) {
