@@ -7,8 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Friendship {
-    private long userId;
-    private long friendId;
-    private String status;
+public class MPA {
+    private long id;
+    private String name;
 }

@@ -11,9 +11,9 @@ CREATE TABLE IF NOT EXISTS Films (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
     name VARCHAR(255) NOT NULL,
     description TEXT,
-    releaseDate DATE,
+    release_date DATE,
     duration INT,
-    mpaRating VARCHAR(10)
+    mpa_rating VARCHAR(10) DEFAULT 'NR'
 );
 
 CREATE TABLE IF NOT EXISTS Genres (
@@ -22,26 +22,26 @@ CREATE TABLE IF NOT EXISTS Genres (
 );
 
 CREATE TABLE IF NOT EXISTS FilmGenres (
-    filmId BIGINT,
-    genreId BIGINT,
-    PRIMARY KEY (filmId, genreId),
-    FOREIGN KEY (filmId) REFERENCES Films(id) ON DELETE CASCADE,
-    FOREIGN KEY (genreId) REFERENCES Genres(id) ON DELETE CASCADE
+    film_id BIGINT,
+    genre_id BIGINT,
+    PRIMARY KEY (film_id, genre_id),
+    FOREIGN KEY (film_id) REFERENCES Films(id) ON DELETE CASCADE,
+    FOREIGN KEY (genre_id) REFERENCES Genres(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS Likes (
-    userId BIGINT,
-    filmId BIGINT,
-    PRIMARY KEY (userId, filmId),
-    FOREIGN KEY (userId) REFERENCES Users(id) ON DELETE CASCADE,
-    FOREIGN KEY (filmId) REFERENCES Films(id) ON DELETE CASCADE
+    user_id BIGINT,
+    film_id BIGINT,
+    PRIMARY KEY (user_id, film_id),
+    FOREIGN KEY (user_id) REFERENCES Users(id) ON DELETE CASCADE,
+    FOREIGN KEY (film_id) REFERENCES Films(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS Friendships (
-    userId BIGINT,
-    friendId BIGINT,
+    user_id BIGINT,
+    friend_id BIGINT,
     status VARCHAR(20),
-    PRIMARY KEY (userId, friendId),
-    FOREIGN KEY (userId) REFERENCES Users(id) ON DELETE CASCADE,
-    FOREIGN KEY (friendId) REFERENCES Users(id) ON DELETE CASCADE
+    PRIMARY KEY (user_id, friend_id),
+    FOREIGN KEY (user_id) REFERENCES Users(id) ON DELETE CASCADE,
+    FOREIGN KEY (friend_id) REFERENCES Users(id) ON DELETE CASCADE
 );
