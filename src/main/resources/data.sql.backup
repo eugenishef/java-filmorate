@@ -1,0 +1,31 @@
+INSERT INTO Users (email, login, name, birthday)
+VALUES ('user1@example.com', 'user1', 'User One', '1990-01-01'),
+       ('user2@example.com', 'user2', 'User Two', '1995-05-15'),
+       ('user3@example.com', 'user3', 'User Three', '1985-10-20');
+
+INSERT INTO Genres (name)
+VALUES ('Action'),
+       ('Drama'),
+       ('Comedy'),
+       ('Adventure'),
+       ('Sci-Fi');
+
+INSERT INTO Films (name, description, release_date, duration, mpa_rating)
+VALUES ('Film One', 'Description of Film One', '2020-01-01', 120, 'PG-13'),
+       ('Film Two', 'Description of Film Two', '2018-05-15', 105, 'R'),
+       ('Film Three', 'Description of Film Three', '2019-10-20', 90, 'PG');
+
+INSERT INTO FilmGenres (filmId, genreId)
+SELECT f.id AS filmId, g.id AS genreId
+FROM Films f, Genres g
+WHERE f.name = 'Film One' AND g.name IN ('Action', 'Adventure');
+
+INSERT INTO FilmGenres (filmId, genreId)
+SELECT Films.id, Genres.id
+FROM Films, Genres
+WHERE Films.name = 'Film Two' AND Genres.name IN ('Drama', 'Comedy');
+
+INSERT INTO Likes (userId, filmId)
+SELECT Users.id, Films.id
+FROM Users, Films
+WHERE Users.login IN ('user1', 'user2') AND Films.name = 'Film One';

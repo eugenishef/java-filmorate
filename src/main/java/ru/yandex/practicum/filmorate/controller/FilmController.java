@@ -1,10 +1,11 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
-import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 
 import javax.validation.Valid;
 import java.util.List;
@@ -12,31 +13,31 @@ import java.util.List;
 @RestController
 @RequestMapping("/films")
 public class FilmController {
-    private final FilmStorage filmStorage;
     private final FilmService filmService;
 
     private static final String ID_PATH = "/{id}";
     private static final String LIKE_PATH = ID_PATH + "/like/{userId}";
 
     @Autowired
-    public FilmController(FilmStorage filmStorage, FilmService filmService) {
-        this.filmStorage = filmStorage;
+    public FilmController(FilmService filmService) {
         this.filmService = filmService;
     }
 
     @PostMapping
-    public Film addFilm(@Valid @RequestBody Film film) {
-        return filmStorage.addFilm(film);
+    public ResponseEntity<Film> addFilm(@Valid @RequestBody Film film) {
+        Film createdFilm = filmService.addFilm(film);
+        return new ResponseEntity<>(createdFilm, HttpStatus.CREATED);
     }
 
     @PutMapping
-    public Film updateFilm(@RequestBody Film film) {
-        return filmStorage.updateFilm(film);
+    public ResponseEntity<Film> updateFilm(@RequestBody Film film) {
+        Film updatedFilm = filmService.updateFilm(film);
+        return new ResponseEntity<>(updatedFilm, HttpStatus.OK);
     }
 
     @GetMapping
     public List<Film> getAllFilms() {
-        return filmStorage.getAllFilms();
+        return filmService.findAll();
     }
 
     @GetMapping(ID_PATH)
