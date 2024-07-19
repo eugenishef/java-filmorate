@@ -1,86 +1,84 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.dto.UserDto;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.service.UserService;
+import ru.yandex.practicum.filmorate.service.dao.UserService;
 
 import javax.validation.Valid;
-import java.util.List;
+import javax.validation.constraints.Min;
+import java.util.Collection;
+import java.util.Collections;
 
-@Slf4j
-@RestController
+@RequestMapping(UserController.USERS_BASE_PATH)
 @FieldDefaults(level = AccessLevel.PRIVATE)
-@RequestMapping("/users")
+@RestController
+@RequiredArgsConstructor
+@Validated
 public class UserController {
-
+    static final String USERS_BASE_PATH = "/users";
+    static final String FRIENDS_PATH = "/{id}/friends/{friendId}";
     final UserService userService;
 
-    static final String FRIENDS_PATH = "/{id}/friends/{friendId}";
-    static final String USER_ID_PATH = "/{id}";
+    @GetMapping
+    @ResponseStatus(HttpStatus.OK)
+    public Collection<UserDto> findAll() {
+        return userService.findAll();
+    }
 
-    @Autowired
-    public UserController(UserService userService) {
-        this.userService = userService;
+    @GetMapping("/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    public UserDto findUserById(@PathVariable @Min(1) Long id) {
+        return userService.findUserById(id);
     }
 
     @PostMapping
-    public ResponseEntity<User> createUser(@Valid @RequestBody User user) {
-        User createdUser = userService.createUser(user);
-        return new ResponseEntity<>(createdUser, HttpStatus.CREATED);
+    @ResponseStatus(HttpStatus.CREATED)
+    public UserDto create(@Valid @RequestBody User newUser) {
+        return userService.create(newUser);
     }
 
     @PutMapping
-    public ResponseEntity<User> updateUser(@RequestBody User user) {
-        try {
-            User updatedUser = userService.updateUser(user);
-            return new ResponseEntity<>(updatedUser, HttpStatus.OK);
-        } catch (IllegalArgumentException e) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-    }
-
-    @GetMapping
-    public List<User> getAllUsers() {
-        return userService.getAllUsers();
-    }
-
-    @GetMapping(USER_ID_PATH)
-    public ResponseEntity<User> getUserById(@PathVariable long id) {
-        User user = userService.getUserById(id);
-        return user != null ? ResponseEntity.ok(user) : ResponseEntity.notFound().build();
+    @ResponseStatus(HttpStatus.OK)
+    public UserDto update(@Valid @RequestBody User updUser) {
+        return userService.update(updUser);
     }
 
     @PutMapping(FRIENDS_PATH)
-    public ResponseEntity<Void> addFriend(@PathVariable int id, @PathVariable int friendId) {
-        try {
-            userService.addFriend(id, friendId);
-            return new ResponseEntity<>(HttpStatus.OK);
-        } catch (IllegalArgumentException e) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void addFriend(@PathVariable @Min(1) Long id, @PathVariable @Min(1) Long friendId) {
+        userService.addFriend(id, friendId);
     }
 
     @DeleteMapping(FRIENDS_PATH)
-    public ResponseEntity<Void> deleteFriend(@PathVariable int id, @PathVariable int friendId) {
-        userService.removeFriend(id, friendId);
-        return ResponseEntity.noContent().build();
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteFriend(@PathVariable @Min(1) Long id, @PathVariable @Min(1) Long friendId) {
+        userService.deleteFriend(id, friendId);
     }
 
-    @GetMapping(USER_ID_PATH + "/friends")
-    public ResponseEntity<List<User>> getUserFriends(@PathVariable int id) {
-        List<User> friends = userService.getUserFriends(id);
-        return ResponseEntity.ok(friends);
+    @GetMapping("/{id}/friends")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<Collection<UserDto>> getFriends(@PathVariable @Min(1) Long id) {
+        try {
+            Collection<UserDto> friends = userService.getUserFriends(id);
+            return ResponseEntity.ok(friends);
+        } catch (NotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Collections.emptyList());
+        }
     }
 
-    @GetMapping(USER_ID_PATH + "/friends/common/{otherId}")
-    public ResponseEntity<List<User>> getCommonFriends(@PathVariable int id, @PathVariable int otherId) {
-        List<User> commonFriends = userService.getCommonFriends(id, otherId);
-        return ResponseEntity.ok(commonFriends);
+    @GetMapping("/{id}/friends/common/{otherId}")
+    @ResponseStatus(HttpStatus.OK)
+    public Collection<UserDto> getCommonFriends(@PathVariable @Min(1) Long id, @PathVariable @Min(1) Long otherId) {
+        return userService.getCommonFriends(id, otherId);
     }
+
 }
+

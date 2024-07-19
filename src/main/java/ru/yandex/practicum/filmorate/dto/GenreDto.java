@@ -6,18 +6,11 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.FieldDefaults;
 
-import java.time.LocalDate;
-import java.util.Set;
-
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Data
 @Builder
-public class UserDto {
+public class GenreDto {
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-    long id;
-    String email;
-    String login;
+    int id;
     String name;
-    LocalDate birthday;
-    Set<Long> friends;
 }
