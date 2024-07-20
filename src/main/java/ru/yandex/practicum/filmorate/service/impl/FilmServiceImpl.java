@@ -37,6 +37,7 @@ public class FilmServiceImpl implements FilmService {
     static final String RATING_NOT_FOUND_MSG = "Рейтинг фильма с id = %d не найден";
     static final String GENRE_NOT_FOUND_MSG = "Жанр фильма с id = %d не найден";
     static final String USER_NOT_FOUND_MSG = "Пользователь с id = %d не найден";
+    static final String SAME_USER_USED_MSG = "Введен один и тот же id пользователя = %d";
     static final String LIKE_ADDED_MSG = "Добавлен лайк пользователя c id = {} к фильму с filmId = {}";
     static final String LIKE_REMOVED_MSG = "Удален лайк пользователя c id = {} к фильму с filmId = {}";
     static final String TOP_FILMS_MSG = "Список {} наиболее популярных фильмов для вывода: {}";
@@ -138,5 +139,26 @@ public class FilmServiceImpl implements FilmService {
 
         log.debug(TOP_FILMS_MSG, count, topPopularFilms);
         return topPopularFilms;
+    }
+
+    @Override
+    public Collection<FilmDto> getCommonFilms(Long userId, Long friendId) {
+        User user = userStorage.findUserById(userId)
+                .orElseThrow(
+                        () -> new NotFoundException(String.format("Пользователь с userId = %d не найден", userId)));
+        User friend = userStorage.findUserById(friendId)
+                .orElseThrow(
+                        () -> new NotFoundException(String.format("Пользователь с friendId = %d не найден", friendId)));
+        if (userId.equals(friendId)) {
+            throw new ValidationException(new StringBuilder(String.format(SAME_USER_USED_MSG, userId)));
+        }
+        Collection<FilmDto> commonFilms = filmStorage.findCommonFilms(userId, friendId).stream()
+                .map(FilmMapper::modelToDto)
+                .sorted((f1, f2) -> Long.compare(f2.getUserLikes().size(), f1.getUserLikes().size()))
+                .collect(Collectors.toList());
+        log.debug(
+                "Список общих отсортированных по популярности фильмов у пользователей с id = {} и id = {} для вывода: {}",
+                userId, friendId, commonFilms);
+        return commonFilms;
     }
 }
