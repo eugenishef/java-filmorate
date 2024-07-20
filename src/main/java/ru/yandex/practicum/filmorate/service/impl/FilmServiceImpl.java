@@ -22,7 +22,6 @@ import ru.yandex.practicum.filmorate.dal.dao.UserStorage;
 import ru.yandex.practicum.filmorate.validation.FilmValidator;
 
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -144,14 +143,16 @@ public class FilmServiceImpl implements FilmService {
                         return true;
                     } else {
                         return filmDto.getReleaseDate().getYear() == year;
-                    }})
+                    }
+                })
                 .filter(filmDto -> {
                     if (genreId == null) {
                         return true;
                     } else {
                         GenreDto currentGenreDto = genreMapper.modelToDto(genreStorage.findGenreById(genreId).get());
                         return filmDto.getGenres().contains(currentGenreDto);
-                    }})
+                    }
+                })
                 .sorted((f1, f2) -> Long.compare(f2.getUserLikes().size(), f1.getUserLikes().size()))
                 .limit(count)
                 .toList();
