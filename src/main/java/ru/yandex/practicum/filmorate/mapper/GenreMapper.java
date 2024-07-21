@@ -1,10 +1,10 @@
 package ru.yandex.practicum.filmorate.mapper;
 
-import org.springframework.stereotype.Component;
+import lombok.experimental.UtilityClass;
 import ru.yandex.practicum.filmorate.dto.GenreDto;
 import ru.yandex.practicum.filmorate.model.Genre;
 
-@Component
+@UtilityClass
 public final class GenreMapper {
     public static GenreDto modelToDto(Genre genre) {
         return GenreDto.builder()
