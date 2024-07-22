@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.dal.dao.*;
 import ru.yandex.practicum.filmorate.dto.FilmDto;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
@@ -13,10 +14,6 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.dao.FilmService;
-import ru.yandex.practicum.filmorate.dal.dao.FilmStorage;
-import ru.yandex.practicum.filmorate.dal.dao.GenreStorage;
-import ru.yandex.practicum.filmorate.dal.dao.RatingStorage;
-import ru.yandex.practicum.filmorate.dal.dao.UserStorage;
 import ru.yandex.practicum.filmorate.validation.FilmValidator;
 
 import java.util.Collection;
@@ -32,6 +29,7 @@ public class FilmServiceImpl implements FilmService {
     final UserStorage userStorage;
     final RatingStorage ratingStorage;
     final GenreStorage genreStorage;
+    final DirectorStorage directorStorage;
 
     static final String FILM_NOT_FOUND_MSG = "Фильм с id = %d не найден";
     static final String RATING_NOT_FOUND_MSG = "Рейтинг фильма с id = %d не найден";
@@ -40,6 +38,7 @@ public class FilmServiceImpl implements FilmService {
     static final String LIKE_ADDED_MSG = "Добавлен лайк пользователя c id = {} к фильму с filmId = {}";
     static final String LIKE_REMOVED_MSG = "Удален лайк пользователя c id = {} к фильму с filmId = {}";
     static final String TOP_FILMS_MSG = "Список {} наиболее популярных фильмов для вывода: {}";
+    static final String DIRECTOR_FILMS_MSG = "Список фильмов режиссера {} отсортированных по {}: {}";
 
     private <T> T getDefaultIfNull(T value, T defaultValue) {
         return value != null ? value : defaultValue;
@@ -138,5 +137,31 @@ public class FilmServiceImpl implements FilmService {
 
         log.debug(TOP_FILMS_MSG, count, topPopularFilms);
         return topPopularFilms;
+    }
+
+    @Override
+    public Collection<FilmDto> listFilmsDirector(int directorId, String sortBy) {
+        directorStorage.findDirectorById(directorId);
+        Collection<FilmDto> listFilms;
+        switch (sortBy) {
+            case "likes":
+                Comparator<FilmDto> byLikes = Comparator.comparingInt(f -> f.getUserLikes().size());
+                listFilms = filmStorage.listFilmsDirector(directorId).stream()
+                        .map(FilmMapper::modelToDto)
+                        .sorted(byLikes.reversed())
+                        .toList();
+                break;
+                case "year":
+                    Comparator<FilmDto> byDate = Comparator.comparing(FilmDto::getReleaseDate);
+                    listFilms = filmStorage.listFilmsDirector(directorId).stream()
+                            .map(FilmMapper::modelToDto)
+                            .sorted(byDate)
+                            .toList();
+                    break;
+            default:
+                throw new ValidationException(new StringBuilder("неверный параметр сортировки"));
+        }
+        log.debug(DIRECTOR_FILMS_MSG, directorId, sortBy, listFilms);
+        return listFilms;
     }
 }
