@@ -6,9 +6,11 @@ import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dto.FilmDto;
+import ru.yandex.practicum.filmorate.dto.GenreDto;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.mapper.FilmMapper;
+import ru.yandex.practicum.filmorate.mapper.GenreMapper;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.User;
@@ -127,16 +129,35 @@ public class FilmServiceImpl implements FilmService {
     }
 
     @Override
-    public Collection<FilmDto> getTopPopularFilms(int count) {
-        Comparator<FilmDto> byLikes = Comparator.comparingInt(f -> f.getUserLikes().size());
+    public Collection<FilmDto> getPopularFilms(Integer count, Integer genreId, Integer year) {
+        Collection<Film> topPopularFilms = filmStorage.findAll();
 
-        Collection<FilmDto> topPopularFilms = filmStorage.findAll().stream()
+        if (count == null) {
+            count = topPopularFilms.size();
+        }
+
+        Collection<FilmDto> topPopularFilmsDto = topPopularFilms.stream()
                 .map(FilmMapper::modelToDto)
-                .sorted(byLikes.reversed())
+                .filter(filmDto -> {
+                    if (year == null) {
+                        return true;
+                    } else {
+                        return filmDto.getReleaseDate().getYear() == year;
+                    }})
+                .filter(filmDto -> {
+                    if (genreId == null) {
+                        return true;
+                    } else {
+                        GenreMapper genreMapper = null;
+                        GenreDto currentGenreDto = genreMapper.modelToDto(genreStorage.findGenreById(genreId).get());
+                        return filmDto.getGenres().contains(currentGenreDto);
+                    }})
+                .sorted((f1, f2) -> Long.compare(f2.getUserLikes().size(), f1.getUserLikes().size()))
                 .limit(count)
-                .collect(Collectors.toList());
-
+                .toList();
         log.debug(TOP_FILMS_MSG, count, topPopularFilms);
-        return topPopularFilms;
+
+        return topPopularFilmsDto;
+
     }
 }
