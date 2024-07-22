@@ -1,9 +1,11 @@
+DROP TABLE IF EXISTS film_director;
 DROP TABLE IF EXISTS user_friends;
 DROP TABLE IF EXISTS film_userlikes;
 DROP TABLE IF EXISTS users;
 DROP TABLE IF EXISTS film_genre;
 DROP TABLE IF EXISTS film;
 DROP TABLE IF EXISTS genre;
+DROP TABLE IF EXISTS director;
 DROP TABLE IF EXISTS rating;
 
 CREATE TABLE rating(id serial NOT NULL,
@@ -52,3 +54,14 @@ CREATE TABLE user_friends(id bigserial NOT NULL,
                           CONSTRAINT user_friends_pkey PRIMARY KEY (id),
                           CONSTRAINT user_friends_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id),
                           CONSTRAINT user_friends_user_friend_id_fkey FOREIGN KEY (user_friend_id) REFERENCES users(id));
+
+CREATE TABLE director(id serial NOT NULL,
+                   name varchar NOT NULL,
+                   CONSTRAINT director_pkey PRIMARY KEY (id));
+
+CREATE TABLE film_director(id serial NOT NULL,
+                        film_id int4 NOT NULL,
+                        director_id int4 NOT NULL,
+                        CONSTRAINT film_director_pkey PRIMARY KEY (id),
+                        CONSTRAINT film_director_film_id_fkey FOREIGN KEY (film_id) REFERENCES film(id),
+                        CONSTRAINT film_director_director_id_fkey FOREIGN KEY (director_id) REFERENCES director(id));

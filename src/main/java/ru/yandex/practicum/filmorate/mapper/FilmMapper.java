@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.mapper;
 import lombok.experimental.UtilityClass;
 import ru.yandex.practicum.filmorate.dto.FilmDto;
 import ru.yandex.practicum.filmorate.dto.GenreDto;
+import ru.yandex.practicum.filmorate.dto.DirectorDto;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.util.Comparator;
@@ -25,6 +26,10 @@ public final class FilmMapper {
                 .genres(film.getGenres().stream()
                         .map(GenreMapper::modelToDto)
                         .sorted(Comparator.comparingInt(GenreDto::getId))
+                        .collect(Collectors.toCollection(LinkedHashSet::new)))
+                .directors(film.getDirectors().stream()
+                        .map(DirectorMapper::modelToDto)
+                        .sorted(Comparator.comparingInt(DirectorDto::getId))
                         .collect(Collectors.toCollection(LinkedHashSet::new)))
                 .build();
     }

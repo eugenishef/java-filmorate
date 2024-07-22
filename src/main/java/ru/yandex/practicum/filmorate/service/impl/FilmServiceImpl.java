@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.dal.dao.*;
 import ru.yandex.practicum.filmorate.dto.FilmDto;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
@@ -33,6 +34,7 @@ public class FilmServiceImpl implements FilmService {
     final UserStorage userStorage;
     final RatingStorage ratingStorage;
     final GenreStorage genreStorage;
+    final DirectorStorage directorStorage;
 
     final UserService userService;
 
@@ -45,6 +47,7 @@ public class FilmServiceImpl implements FilmService {
     static final String LIKE_REMOVED_MSG = "Удален лайк пользователя c id = {} к фильму с filmId = {}";
     static final String TOP_FILMS_MSG = "Список {} наиболее популярных фильмов для вывода: {}";
     static final String COMMON_FILMS_MSG = "Список общих отсортированных по популярности фильмов у пользователей с id = {} и id = {} для вывода: {}";
+    static final String DIRECTOR_FILMS_MSG = "Список фильмов режиссера {} отсортированных по {}: {}";
 
     private <T> T getDefaultIfNull(T value, T defaultValue) {
         return value != null ? value : defaultValue;
@@ -158,5 +161,31 @@ public class FilmServiceImpl implements FilmService {
                 .collect(Collectors.toList());
         log.debug(COMMON_FILMS_MSG,userId, friendId, commonFilms);
         return commonFilms;
+    }
+
+    @Override
+    public Collection<FilmDto> listFilmsDirector(int directorId, String sortBy) {
+        directorStorage.findDirectorById(directorId);
+        Collection<FilmDto> listFilms;
+        switch (sortBy) {
+            case "likes":
+                Comparator<FilmDto> byLikes = Comparator.comparingInt(f -> f.getUserLikes().size());
+                listFilms = filmStorage.listFilmsDirector(directorId).stream()
+                        .map(FilmMapper::modelToDto)
+                        .sorted(byLikes.reversed())
+                        .toList();
+                break;
+                case "year":
+                    Comparator<FilmDto> byDate = Comparator.comparing(FilmDto::getReleaseDate);
+                    listFilms = filmStorage.listFilmsDirector(directorId).stream()
+                            .map(FilmMapper::modelToDto)
+                            .sorted(byDate)
+                            .toList();
+                    break;
+            default:
+                throw new ValidationException(new StringBuilder("неверный параметр сортировки"));
+        }
+        log.debug(DIRECTOR_FILMS_MSG, directorId, sortBy, listFilms);
+        return listFilms;
     }
 }
