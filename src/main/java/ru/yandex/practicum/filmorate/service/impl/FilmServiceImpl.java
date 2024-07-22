@@ -142,7 +142,8 @@ public class FilmServiceImpl implements FilmService {
                         return true;
                     } else {
                         return filmDto.getReleaseDate().getYear() == year;
-                    }})
+                    }
+                })
                 .filter(filmDto -> {
                     if (genreId == null) {
                         return true;
@@ -150,7 +151,8 @@ public class FilmServiceImpl implements FilmService {
                         GenreMapper genreMapper = null;
                         GenreDto currentGenreDto = genreMapper.modelToDto(genreStorage.findGenreById(genreId).get());
                         return filmDto.getGenres().contains(currentGenreDto);
-                    }})
+                    }
+                })
                 .sorted((f1, f2) -> Long.compare(f2.getUserLikes().size(), f1.getUserLikes().size()))
                 .limit(count)
                 .toList();
@@ -172,13 +174,13 @@ public class FilmServiceImpl implements FilmService {
                         .sorted(byLikes.reversed())
                         .toList();
                 break;
-                case "year":
-                    Comparator<FilmDto> byDate = Comparator.comparing(FilmDto::getReleaseDate);
-                    listFilms = filmStorage.listFilmsDirector(directorId).stream()
-                            .map(FilmMapper::modelToDto)
-                            .sorted(byDate)
-                            .toList();
-                    break;
+            case "year":
+                Comparator<FilmDto> byDate = Comparator.comparing(FilmDto::getReleaseDate);
+                listFilms = filmStorage.listFilmsDirector(directorId).stream()
+                        .map(FilmMapper::modelToDto)
+                        .sorted(byDate)
+                        .toList();
+                break;
             default:
                 throw new ValidationException(new StringBuilder("неверный параметр сортировки"));
         }
