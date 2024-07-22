@@ -50,19 +50,21 @@ public class FilmDbStorageImpl implements FilmStorage {
                 "WHERE fd.director_id = d.id AND fd.film_id = ? ", directorRowMapper, filmId));
     }
 
-    private Set<Long> findFilmLikesByFilmId(Integer filmId) {
+    public Set<Long> findFilmLikesByFilmId(Integer filmId) {
         return new HashSet<>(jdbc.queryForList("SELECT fu.user_id FROM film_userlikes fu " +
                 "WHERE fu.film_id = ? ", Long.class, filmId));
     }
 
     @Override
     public Collection<Film> findAll() {
-        String query =
-                "SELECT f.*, r.name as rating_name, fg.genre_id, g.name as genre_name, fu.user_id FROM film f " +
-                        "JOIN rating r ON f.rating_id = r.id " +
-                        "JOIN film_genre fg ON fg.film_id = f.id " +
-                        "JOIN genre g ON g.id = fg.genre_id " +
-                        "LEFT JOIN film_userlikes fu ON f.id = fu.film_id ";
+        String query = "SELECT f.*, r.name as rating_name, fg.genre_id, g.name as genre_name, " +
+                "fd.director_id, d.name as director_name, fu.user_id FROM film f " +
+                "LEFT JOIN rating r ON f.rating_id = r.id " +
+                "LEFT JOIN film_genre fg ON fg.film_id = f.id " +
+                "LEFT JOIN genre g ON g.id = fg.genre_id " +
+                "LEFT JOIN film_director fd ON fd.film_id = f.id " +
+                "LEFT JOIN director d ON d.id = fd.director_id " +
+                "LEFT JOIN film_userlikes fu ON f.id = fu.film_id ";
         return jdbc.query(query, filmExtractor);
     }
 

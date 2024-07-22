@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.dto.FilmDto;
 import ru.yandex.practicum.filmorate.dto.UserDto;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
@@ -78,6 +79,12 @@ public class UserController {
     @ResponseStatus(HttpStatus.OK)
     public Collection<UserDto> getCommonFriends(@PathVariable @Min(1) Long id, @PathVariable @Min(1) Long otherId) {
         return userService.getCommonFriends(id, otherId);
+    }
+
+    @GetMapping("/{id}/recommendations")
+    @ResponseStatus(HttpStatus.OK)
+    public Collection<FilmDto> getRecommendations(@PathVariable @Min(1) Long id) {
+        return userService.getRecommendations(id);
     }
 
 }
