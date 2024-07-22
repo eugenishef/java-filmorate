@@ -50,7 +50,7 @@ public class FilmDbStorageImpl implements FilmStorage {
                 "WHERE fd.director_id = d.id AND fd.film_id = ? ", directorRowMapper, filmId));
     }
 
-    private Set<Long> findFilmLikesByFilmId(Integer filmId) {
+    public Set<Long> findFilmLikesByFilmId(Integer filmId) {
         return new HashSet<>(jdbc.queryForList("SELECT fu.user_id FROM film_userlikes fu " +
                 "WHERE fu.film_id = ? ", Long.class, filmId));
     }
