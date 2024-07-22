@@ -21,5 +21,7 @@ public interface FilmService {
 
     Collection<FilmDto> getTopPopularFilms(int count);
 
+    Collection<FilmDto> getCommonFilms(Long userId, Long friendId);
+
     Collection<FilmDto> listFilmsDirector(int directorId, String param);
 }

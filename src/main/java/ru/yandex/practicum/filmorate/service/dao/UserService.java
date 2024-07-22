@@ -11,6 +11,8 @@ public interface UserService {
 
     UserDto findUserById(Long id);
 
+    User getUserById(Long userId);
+
     UserDto create(User newUser);
 
     UserDto update(User updUser);

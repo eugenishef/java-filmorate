@@ -36,7 +36,8 @@ public class UserServiceImpl implements UserService {
     static final String EQUAL_IDS_LOG_MSG = "Пользователь не может добавить себя в друзья. Для id пользователя и id друга передано одинаковое значение {}";
     static final String FRIENDSHIP_EXISTS_LOG_MSG = "Пользователь с id = {} уже является другом пользователя c id = {}";
 
-    private User getUserById(Long userId) {
+    @Override
+    public User getUserById(Long userId) {
         return userStorage.findUserById(userId)
                 .orElseThrow(() -> new NotFoundException(String.format(USER_NOT_FOUND_MSG, userId)));
     }

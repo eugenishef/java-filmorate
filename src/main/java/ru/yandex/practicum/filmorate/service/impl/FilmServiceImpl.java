@@ -14,6 +14,11 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.dao.FilmService;
+import ru.yandex.practicum.filmorate.dal.dao.FilmStorage;
+import ru.yandex.practicum.filmorate.dal.dao.GenreStorage;
+import ru.yandex.practicum.filmorate.dal.dao.RatingStorage;
+import ru.yandex.practicum.filmorate.dal.dao.UserStorage;
+import ru.yandex.practicum.filmorate.service.dao.UserService;
 import ru.yandex.practicum.filmorate.validation.FilmValidator;
 
 import java.util.Collection;
@@ -31,13 +36,17 @@ public class FilmServiceImpl implements FilmService {
     final GenreStorage genreStorage;
     final DirectorStorage directorStorage;
 
+    final UserService userService;
+
     static final String FILM_NOT_FOUND_MSG = "Фильм с id = %d не найден";
     static final String RATING_NOT_FOUND_MSG = "Рейтинг фильма с id = %d не найден";
     static final String GENRE_NOT_FOUND_MSG = "Жанр фильма с id = %d не найден";
     static final String USER_NOT_FOUND_MSG = "Пользователь с id = %d не найден";
+    static final String SAME_USER_USED_MSG = "Введен один и тот же id пользователя = %d";
     static final String LIKE_ADDED_MSG = "Добавлен лайк пользователя c id = {} к фильму с filmId = {}";
     static final String LIKE_REMOVED_MSG = "Удален лайк пользователя c id = {} к фильму с filmId = {}";
     static final String TOP_FILMS_MSG = "Список {} наиболее популярных фильмов для вывода: {}";
+    static final String COMMON_FILMS_MSG = "Список общих отсортированных по популярности фильмов у пользователей с id = {} и id = {} для вывода: {}";
     static final String DIRECTOR_FILMS_MSG = "Список фильмов режиссера {} отсортированных по {}: {}";
 
     private <T> T getDefaultIfNull(T value, T defaultValue) {
@@ -137,6 +146,21 @@ public class FilmServiceImpl implements FilmService {
 
         log.debug(TOP_FILMS_MSG, count, topPopularFilms);
         return topPopularFilms;
+    }
+
+    @Override
+    public Collection<FilmDto> getCommonFilms(Long userId, Long friendId) {
+        User user = userService.getUserById(userId);
+        User friend = userService.getUserById(friendId);
+        if (userId.equals(friendId)) {
+            throw new ValidationException(new StringBuilder(String.format(SAME_USER_USED_MSG, userId)));
+        }
+        Collection<FilmDto> commonFilms = filmStorage.findCommonFilms(userId, friendId).stream()
+                .map(FilmMapper::modelToDto)
+                .sorted((f1, f2) -> Long.compare(f2.getUserLikes().size(), f1.getUserLikes().size()))
+                .collect(Collectors.toList());
+        log.debug(COMMON_FILMS_MSG,userId, friendId, commonFilms);
+        return commonFilms;
     }
 
     @Override
