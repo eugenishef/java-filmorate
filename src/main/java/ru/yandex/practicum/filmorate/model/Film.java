@@ -30,4 +30,6 @@ public class Film {
     Rating mpa;
     @Builder.Default
     Set<Genre> genres = new HashSet<>();
+    @Builder.Default
+    Set<Director> directors = new HashSet<>();
 }
