@@ -20,4 +20,6 @@ public interface FilmService {
     void deleteLike(Integer filmId, Long userId);
 
     Collection<FilmDto> getTopPopularFilms(int count);
+
+    Collection<FilmDto> listFilmsDirector(int directorId, String param);
 }
