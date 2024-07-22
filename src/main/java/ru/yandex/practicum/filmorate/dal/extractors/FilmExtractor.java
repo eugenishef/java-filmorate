@@ -22,14 +22,9 @@ public class FilmExtractor implements ResultSetExtractor<Collection<Film>> {
             if (data.containsKey(filmId)) {
                 Film film = data.get(filmId);
                 Set<Genre> genres = film.getGenres();
-                genres.add(Genre.builder().id(rs.getInt("genre_id")).name(rs.getString("genre_name")).build());
-                if (rs.getLong("user_id") != 0) {
-                    Set<Long> userLikes = film.getUserLikes();
-                    if (Objects.isNull(userLikes)) {
-                        userLikes = new HashSet<>();
-                    }
-                    userLikes.add(rs.getLong("user_id"));
-                }
+                setGenre(film, genres, rs);
+                Set<Long> userLikes = film.getUserLikes();
+                setLikes(film, userLikes, rs);
                 Set<Director> directors = film.getDirectors();
                 setDirector(film, directors, rs);
             } else {
@@ -42,14 +37,10 @@ public class FilmExtractor implements ResultSetExtractor<Collection<Film>> {
                         .releaseDate(rs.getDate("release_date").toLocalDate())
                         .build();
                 Set<Genre> genres = new HashSet<>();
-                genres.add(Genre.builder().id(rs.getInt("genre_id")).name(rs.getString("genre_name")).build());
-                film.setGenres(genres);
-                if (rs.getLong("user_id") != 0) {
-                    Set<Long> userLikes = new HashSet<>();
-                    userLikes.add(rs.getLong("user_id"));
-                    film.setUserLikes(userLikes);
-                }
-                Set<Director> directors = film.getDirectors();
+                setGenre(film, genres, rs);
+                Set<Long> userLikes = new HashSet<>();
+                setLikes(film, userLikes, rs);
+                Set<Director> directors = new HashSet<>();
                 setDirector(film, directors, rs);
                 data.put(filmId, film);
             }
@@ -62,7 +53,23 @@ public class FilmExtractor implements ResultSetExtractor<Collection<Film>> {
             directors.add(Director.builder()
                     .id(rs.getInt("director_id"))
                     .name(rs.getString("director_name")).build());
-            film.setDirectors(directors);
         }
+        film.setDirectors(directors);
+    }
+
+    private void setGenre(Film film, Set<Genre> genres, ResultSet rs) throws SQLException {
+        if (rs.getInt("genre_id") != 0) {
+            genres.add(Genre.builder()
+                    .id(rs.getInt("genre_id"))
+                    .name(rs.getString("genre_name")).build());
+        }
+        film.setGenres(genres);
+    }
+
+    private void setLikes(Film film, Set<Long> userLikes, ResultSet rs) throws SQLException {
+        if (rs.getInt("user_id") != 0) {
+            userLikes.add(rs.getLong("user_id"));
+        }
+        film.setUserLikes(userLikes);
     }
 }
