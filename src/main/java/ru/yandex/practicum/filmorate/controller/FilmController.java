@@ -73,4 +73,11 @@ public class FilmController {
                                                @RequestParam String sortBy) {
         return filmService.listFilmsDirector(directorId, sortBy);
     }
+
+    @GetMapping("/common")
+    @ResponseStatus(HttpStatus.OK)
+    public Collection<FilmDto> commonFilms(
+            @RequestParam() long userId, @RequestParam() long friendId) {
+        return filmService.getCommonFilms(userId, friendId);
+    }
 }

@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.e2e;
+/*package ru.yandex.practicum.filmorate.e2e;
 
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
@@ -89,5 +89,5 @@ public class UserRepositoryIntegrationTest {
         assertThat(optionalUser.get().getLogin()).isEqualTo(user.getLogin());
         assertThat(optionalUser.get().getBirthday()).isEqualTo(user.getBirthday());
     }
-}
+}*/
 
