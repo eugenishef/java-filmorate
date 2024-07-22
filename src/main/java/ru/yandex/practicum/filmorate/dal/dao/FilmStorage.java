@@ -21,4 +21,6 @@ public interface FilmStorage {
     Collection<Film> findCommonFilms(Long userId, Long friendId);
 
     Collection<Film> listFilmsDirector(int directorId);
+
+    Collection<Long> findFilmLikesByFilmId(Integer filmId);
 }

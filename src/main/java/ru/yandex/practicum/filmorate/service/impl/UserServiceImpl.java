@@ -5,17 +5,20 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.dal.dao.FilmStorage;
+import ru.yandex.practicum.filmorate.dto.FilmDto;
 import ru.yandex.practicum.filmorate.dto.UserDto;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.mapper.FilmMapper;
 import ru.yandex.practicum.filmorate.mapper.UserMapper;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.dao.UserService;
 import ru.yandex.practicum.filmorate.dal.dao.UserStorage;
 import ru.yandex.practicum.filmorate.validation.UserValidator;
 
-import java.util.Collection;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -24,6 +27,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
     final UserStorage userStorage;
+    final FilmStorage filmStorage;
 
     static final String USER_NOT_FOUND_MSG = "Пользователь с id = %d не найден";
     static final String FRIEND_NOT_FOUND_MSG = "Пользователь для %s с id = %d не найден";
@@ -135,5 +139,39 @@ public class UserServiceImpl implements UserService {
         oldUser.setName(Optional.ofNullable(updUser.getName()).filter(name -> !name.isBlank()).orElse(oldUser.getName()));
 
         return UserMapper.modelToDto(userStorage.update(oldUser));
+    }
+
+    @Override
+    public Collection<FilmDto> getRecommendations(Long id) {
+        Set<Integer> usersFilms = userStorage.findUsersFilms(id);
+        List<Long> collaborators = new ArrayList<>();
+        Collection<FilmDto> recommendedFilms = new ArrayList<>();
+        int maxFreq = 0;
+        Long idMaxFreq = null;
+
+        for (Integer filmId : usersFilms) {
+            collaborators.addAll(filmStorage.findFilmLikesByFilmId(filmId));
+        }
+
+        for (Long userId : collaborators) {
+            int freq = (int) collaborators
+                    .stream()
+                    .filter(currentId -> currentId.equals(userId) && !currentId.equals(id))
+                    .count();
+
+            if (freq > maxFreq) {
+                maxFreq = freq;
+                idMaxFreq = userId;
+            }
+        }
+        Set<Integer> collaboratorsFilms = new HashSet<>(userStorage.findUsersFilms(idMaxFreq));
+
+        for (Integer collabFilmId : collaboratorsFilms) {
+            if (!usersFilms.contains(collabFilmId)) {
+                Film recommendedFilm = filmStorage.findFilmById(collabFilmId).get();
+                recommendedFilms.add(FilmMapper.modelToDto(recommendedFilm));
+            }
+        }
+        return recommendedFilms;
     }
 }
