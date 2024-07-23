@@ -21,12 +21,7 @@ import ru.yandex.practicum.filmorate.dal.mappers.GenreRowMapper;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 @Slf4j
 @FieldDefaults(level = AccessLevel.PRIVATE)
@@ -53,6 +48,35 @@ public class FilmDbStorageImpl implements FilmStorage {
     public Set<Long> findFilmLikesByFilmId(Integer filmId) {
         return new HashSet<>(jdbc.queryForList("SELECT fu.user_id FROM film_userlikes fu " +
                 "WHERE fu.film_id = ? ", Long.class, filmId));
+    }
+
+    @Override
+    public List<Film> searchFilms(String query, String by) {
+        String baseSql = "SELECT f.*, r.name as rating_name FROM film f " +
+                "LEFT JOIN rating r ON f.rating_id = r.id WHERE (";
+        String directorSql = "f.id IN (SELECT fd.film_id FROM film_director fd " +
+                "JOIN director d ON fd.director_id = d.id " +
+                "WHERE LOWER(d.name) LIKE LOWER(?))";
+
+        List<String> conditions = new ArrayList<>();
+        List<Object> params = new ArrayList<>();
+
+        if (by.contains("title")) {
+            conditions.add("LOWER(f.name) LIKE LOWER(?) OR LOWER(f.description) LIKE LOWER(?)");
+            params.add("%" + query + "%");
+            params.add("%" + query + "%");
+        }
+        if (by.contains("director")) {
+            conditions.add(directorSql);
+            params.add("%" + query + "%");
+        }
+
+        if (conditions.isEmpty()) {
+            return List.of();
+        }
+
+        String finalSql = baseSql + String.join(" OR ", conditions) + ")";
+        return jdbc.query(finalSql, filmRowMapper, params.toArray());
     }
 
     @Override

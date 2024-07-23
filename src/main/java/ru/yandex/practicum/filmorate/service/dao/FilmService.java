@@ -4,6 +4,7 @@ import ru.yandex.practicum.filmorate.dto.FilmDto;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.util.Collection;
+import java.util.List;
 
 public interface FilmService {
 
@@ -24,4 +25,6 @@ public interface FilmService {
     Collection<FilmDto> getCommonFilms(Long userId, Long friendId);
 
     Collection<FilmDto> listFilmsDirector(int directorId, String param);
+
+    List<FilmDto> searchFilms(String query, String by);
 }
