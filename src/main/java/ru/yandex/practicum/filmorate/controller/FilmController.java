@@ -13,6 +13,7 @@ import ru.yandex.practicum.filmorate.service.dao.FilmService;
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
 import java.util.Collection;
+import java.util.List;
 
 @RequestMapping(FilmController.FILMS_BASE_PATH)
 @FieldDefaults(level = AccessLevel.PRIVATE)
@@ -79,5 +80,11 @@ public class FilmController {
     public Collection<FilmDto> commonFilms(
             @RequestParam() long userId, @RequestParam() long friendId) {
         return filmService.getCommonFilms(userId, friendId);
+    }
+
+    @GetMapping("/search")
+    @ResponseStatus(HttpStatus.OK)
+    public List<FilmDto> searchFilms(String query, @RequestParam(defaultValue = "") String by) {
+        return filmService.searchFilms(query, by);
     }
 }

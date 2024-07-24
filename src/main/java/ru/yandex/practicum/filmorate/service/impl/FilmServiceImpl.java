@@ -21,8 +21,10 @@ import ru.yandex.practicum.filmorate.dal.dao.UserStorage;
 import ru.yandex.practicum.filmorate.service.dao.UserService;
 import ru.yandex.practicum.filmorate.validation.FilmValidator;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -187,5 +189,14 @@ public class FilmServiceImpl implements FilmService {
         }
         log.debug(DIRECTOR_FILMS_MSG, directorId, sortBy, listFilms);
         return listFilms;
+    }
+
+    @Override
+    public List<FilmDto> searchFilms(String query, String by) {
+        String[] searchBy = by.split(",");
+        return filmStorage.searchFilms(query, Arrays.toString(searchBy))
+                .stream()
+                .map(FilmMapper::modelToDto)
+                .collect(Collectors.toList());
     }
 }
