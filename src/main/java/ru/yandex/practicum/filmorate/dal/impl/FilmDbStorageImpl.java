@@ -199,13 +199,16 @@ public class FilmDbStorageImpl implements FilmStorage {
     @Override
     public Collection<Film> findCommonFilms(Long userId, Long friendId) {
         String query =
-                "SELECT f.*, r.name as rating_name, fg.genre_id, g.name as genre_name, fu.user_id " +
+                "SELECT f.*, r.name as rating_name, fg.genre_id, g.name as genre_name, fu.user_id, " +
+                        "fd.director_id, d.name as director_name " +
                         "FROM film_userlikes f_user " +
                         "JOIN film_userlikes f_friend ON f_user.film_id = f_friend.film_id " +
                         "JOIN film f ON f.id = f_user.film_id " +
                         "JOIN rating r ON f.rating_id = r.id " +
-                        "JOIN film_genre fg ON fg.film_id = f.id " +
-                        "JOIN genre g ON g.id = fg.genre_id " +
+                        "LEFT JOIN film_genre fg ON fg.film_id = f.id " +
+                        "LEFT JOIN genre g ON g.id = fg.genre_id " +
+                        "LEFT JOIN film_director fd ON f.id = fd.film_id " +
+                        "LEFT JOIN director d ON fd.director_id = d.id " +
                         "LEFT JOIN film_userlikes fu ON f.id = fu.film_id " +
                         "WHERE f_user.user_id = ? AND f_friend.user_id = ?";
         return jdbc.query(query, filmExtractor, userId, friendId);
