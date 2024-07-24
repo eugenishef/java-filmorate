@@ -9,12 +9,13 @@ import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
 
+@FieldDefaults(level = AccessLevel.PRIVATE)
+@ToString()
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(of = {"email"})
-@FieldDefaults(level = AccessLevel.PRIVATE)
 public class User {
     long id;
     @NotNull

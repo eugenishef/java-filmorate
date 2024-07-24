@@ -133,4 +133,9 @@ public class UserDbStorageImpl implements UserStorage {
         return jdbc.query(query, userExtractor, userId, otherId);
     }
 
+    public Set<Integer> findUsersFilms(Long userId) {
+        return new HashSet<>(jdbc.queryForList("SELECT fu.film_id FROM film_userlikes fu " +
+                "WHERE fu.user_id = ? ", Integer.class, userId));
+    }
+
 }

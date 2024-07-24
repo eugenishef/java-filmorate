@@ -9,6 +9,8 @@ import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.dal.mappers.DirectorRowMapper;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.dal.dao.FilmStorage;
@@ -19,12 +21,7 @@ import ru.yandex.practicum.filmorate.dal.mappers.GenreRowMapper;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 @Slf4j
 @FieldDefaults(level = AccessLevel.PRIVATE)
@@ -35,6 +32,7 @@ public class FilmDbStorageImpl implements FilmStorage {
     private final JdbcTemplate jdbc;
     private final FilmRowMapper filmRowMapper;
     private final GenreRowMapper genreRowMapper;
+    private final DirectorRowMapper directorRowMapper;
     private final FilmExtractor filmExtractor;
 
     private Set<Genre> findFilmGenresIdsByFilmId(Integer filmId) {
@@ -42,19 +40,55 @@ public class FilmDbStorageImpl implements FilmStorage {
                 "WHERE fg.genre_id = g.id AND fg.film_id = ? ", genreRowMapper, filmId));
     }
 
-    private Set<Long> findFilmLikesByFilmId(Integer filmId) {
+    private Set<Director> findFilmDirectorsIdsByFilmId(Integer filmId) {
+        return new HashSet<>(jdbc.query("SELECT d.* FROM film_director fd, director d " +
+                "WHERE fd.director_id = d.id AND fd.film_id = ? ", directorRowMapper, filmId));
+    }
+
+    public Set<Long> findFilmLikesByFilmId(Integer filmId) {
         return new HashSet<>(jdbc.queryForList("SELECT fu.user_id FROM film_userlikes fu " +
                 "WHERE fu.film_id = ? ", Long.class, filmId));
     }
 
     @Override
+    public List<Film> searchFilms(String query, String by) {
+        String baseSql = "SELECT f.*, r.name as rating_name FROM film f " +
+                "LEFT JOIN rating r ON f.rating_id = r.id WHERE (";
+        String directorSql = "f.id IN (SELECT fd.film_id FROM film_director fd " +
+                "JOIN director d ON fd.director_id = d.id " +
+                "WHERE LOWER(d.name) LIKE LOWER(?))";
+
+        List<String> conditions = new ArrayList<>();
+        List<Object> params = new ArrayList<>();
+
+        if (by.contains("title")) {
+            conditions.add("LOWER(f.name) LIKE LOWER(?) OR LOWER(f.description) LIKE LOWER(?)");
+            params.add("%" + query + "%");
+            params.add("%" + query + "%");
+        }
+        if (by.contains("director")) {
+            conditions.add(directorSql);
+            params.add("%" + query + "%");
+        }
+
+        if (conditions.isEmpty()) {
+            return List.of();
+        }
+
+        String finalSql = baseSql + String.join(" OR ", conditions) + ")";
+        return jdbc.query(finalSql, filmRowMapper, params.toArray());
+    }
+
+    @Override
     public Collection<Film> findAll() {
-        String query =
-                "SELECT f.*, r.name as rating_name, fg.genre_id, g.name as genre_name, fu.user_id FROM film f " +
-                        "JOIN rating r ON f.rating_id = r.id " +
-                        "JOIN film_genre fg ON fg.film_id = f.id " +
-                        "JOIN genre g ON g.id = fg.genre_id " +
-                        "LEFT JOIN film_userlikes fu ON f.id = fu.film_id ";
+        String query = "SELECT f.*, r.name as rating_name, fg.genre_id, g.name as genre_name, " +
+                "fd.director_id, d.name as director_name, fu.user_id FROM film f " +
+                "LEFT JOIN rating r ON f.rating_id = r.id " +
+                "LEFT JOIN film_genre fg ON fg.film_id = f.id " +
+                "LEFT JOIN genre g ON g.id = fg.genre_id " +
+                "LEFT JOIN film_director fd ON fd.film_id = f.id " +
+                "LEFT JOIN director d ON d.id = fd.director_id " +
+                "LEFT JOIN film_userlikes fu ON f.id = fu.film_id ";
         return jdbc.query(query, filmExtractor);
     }
 
@@ -93,6 +127,7 @@ public class FilmDbStorageImpl implements FilmStorage {
         }, keyHolder);
         Integer filmId = keyHolder.getKeyAs(Integer.class);
         updateFilmGenre(filmId, newFilm.getGenres());
+        updateFilmDirector(filmId, newFilm.getDirectors());
         Film film = findFilmById(filmId).get();
         log.info("Фильм {} добавлен", film);
         return film;
@@ -132,6 +167,9 @@ public class FilmDbStorageImpl implements FilmStorage {
         if (!Objects.isNull(updFilm.getGenres())) {
             updateFilmGenre(updFilm.getId(), updFilm.getGenres());
         }
+        if (!Objects.isNull(updFilm.getDirectors())) {
+            updateFilmDirector(updFilm.getId(), updFilm.getDirectors());
+        }
         if (rowsUpdated == 0) {
             throw new RuntimeException("Не удалось обновить данные");
         } else {
@@ -153,7 +191,57 @@ public class FilmDbStorageImpl implements FilmStorage {
         film.setGenres(genres);
         Set<Long> userLikes = findFilmLikesByFilmId(id);
         film.setUserLikes(userLikes);
+        Set<Director> directors = findFilmDirectorsIdsByFilmId(id);
+        film.setDirectors(directors);
         return Optional.of(film);
     }
 
+    @Override
+    public Collection<Film> findCommonFilms(Long userId, Long friendId) {
+        String query =
+                "SELECT f.*, r.name as rating_name, fg.genre_id, g.name as genre_name, fu.user_id " +
+                        "FROM film_userlikes f_user " +
+                        "JOIN film_userlikes f_friend ON f_user.film_id = f_friend.film_id " +
+                        "JOIN film f ON f.id = f_user.film_id " +
+                        "JOIN rating r ON f.rating_id = r.id " +
+                        "JOIN film_genre fg ON fg.film_id = f.id " +
+                        "JOIN genre g ON g.id = fg.genre_id " +
+                        "LEFT JOIN film_userlikes fu ON f.id = fu.film_id " +
+                        "WHERE f_user.user_id = ? AND f_friend.user_id = ?";
+        return jdbc.query(query, filmExtractor, userId, friendId);
+    }
+
+    private void updateFilmDirector(Integer filmId, Collection<Director> directors) {
+        if (!Objects.isNull(directors)) {
+            List<Director> directorsList = directors.stream().toList();
+            String query = "MERGE INTO film_director(film_id, director_id) KEY(film_id, director_id) VALUES (?, ?)";
+            jdbc.batchUpdate(query, new BatchPreparedStatementSetter() {
+                @Override
+                public void setValues(PreparedStatement ps, int i) throws SQLException {
+                    ps.setInt(1, filmId);
+                    ps.setInt(2, directorsList.get(i).getId());
+                }
+
+                @Override
+                public int getBatchSize() {
+                    return directors.size();
+                }
+            });
+        }
+    }
+
+    @Override
+    public Collection<Film> listFilmsDirector(int directorId) {
+        String query = "SELECT f.*, r.name as rating_name, fg.genre_id, g.name as genre_name, " +
+                "fd.director_id, d.name as director_name, fu.user_id FROM film f " +
+                            "LEFT JOIN rating r ON f.rating_id = r.id " +
+                            "LEFT JOIN film_genre fg ON fg.film_id = f.id " +
+                            "LEFT JOIN genre g ON g.id = fg.genre_id " +
+                            "LEFT JOIN film_director fd ON fd.film_id = f.id " +
+                            "LEFT JOIN director d ON d.id = fd.director_id " +
+                            "LEFT JOIN film_userlikes fu ON f.id = fu.film_id " +
+                            "WHERE fd.director_id = ? ";
+
+        return jdbc.query(query, filmExtractor, directorId);
+    }
 }

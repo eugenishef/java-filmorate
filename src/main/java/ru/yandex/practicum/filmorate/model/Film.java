@@ -10,12 +10,13 @@ import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
 
+@FieldDefaults(level = AccessLevel.PRIVATE)
+@ToString()
 @Data
 @Builder
 @EqualsAndHashCode(of = {"id"})
 @NoArgsConstructor
 @AllArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE)
 public class Film {
     int id;
     @NotNull
@@ -30,4 +31,6 @@ public class Film {
     Rating mpa;
     @Builder.Default
     Set<Genre> genres = new HashSet<>();
+    @Builder.Default
+    Set<Director> directors = new HashSet<>();
 }

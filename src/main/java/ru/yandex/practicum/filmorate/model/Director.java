@@ -7,8 +7,9 @@ import lombok.experimental.FieldDefaults;
 @ToString()
 @Data
 @Builder
-@RequiredArgsConstructor
-public class Rating {
-    final int id;
-    final String name;
+@NoArgsConstructor
+@AllArgsConstructor
+public class Director {
+    int id;
+    String name;
 }

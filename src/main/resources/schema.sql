@@ -67,7 +67,7 @@ CREATE TABLE film_director(id serial NOT NULL,
                         CONSTRAINT film_director_pkey PRIMARY KEY (id),
                         CONSTRAINT film_director_film_id_fkey FOREIGN KEY (film_id) REFERENCES film(id),
                         CONSTRAINT film_director_director_id_fkey FOREIGN KEY (director_id) REFERENCES director(id));
-
+                        
 CREATE TABLE review(id bigserial NOT NULL,
                     content varchar NOT NULL,
                     is_positive bool NOT NULL,
@@ -86,3 +86,4 @@ CREATE TABLE review_userlikes(id bigserial NOT NULL,
                               CONSTRAINT review_userlikes_review_id_fkey FOREIGN KEY (review_id) REFERENCES review(id),
                               CONSTRAINT review_userlikes_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id)
 );
+
