@@ -1,3 +1,4 @@
+DROP TABLE IF EXISTS events;
 DROP TABLE IF EXISTS film_director;
 DROP TABLE IF EXISTS user_friends;
 DROP TABLE IF EXISTS film_userlikes;
@@ -9,6 +10,16 @@ DROP TABLE IF EXISTS film;
 DROP TABLE IF EXISTS genre;
 DROP TABLE IF EXISTS director;
 DROP TABLE IF EXISTS rating;
+DROP TABLE IF EXISTS event_type;
+DROP TABLE IF EXISTS operation;
+
+CREATE TABLE event_type(id serial NOT NULL,
+                        name varchar NOT NULL,
+                        CONSTRAINT event_type_pkey PRIMARY KEY (id));
+
+CREATE TABLE operation(id serial NOT NULL,
+                       name varchar NOT NULL,
+                       CONSTRAINT operation_pkey PRIMARY KEY (id));
 
 CREATE TABLE rating(id serial NOT NULL,
                     name varchar NOT NULL,
@@ -84,6 +95,17 @@ CREATE TABLE review_userlikes(id bigserial NOT NULL,
                               is_useful bool NOT NULL,
                               CONSTRAINT review_userlikes_pkey PRIMARY KEY (id),
                               CONSTRAINT review_userlikes_review_id_fkey FOREIGN KEY (review_id) REFERENCES review(id),
-                              CONSTRAINT review_userlikes_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id)
-);
+                              CONSTRAINT review_userlikes_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id));
+
+CREATE TABLE events(id bigserial NOT NULL,
+                    user_id bigserial NOT NULL,
+                    event_type_id serial NOT NULL,
+                    operation_id serial NOT NULL,
+                    entity_id bigserial NOT NULL,
+                    timestamp timestamp NOT NULL,
+                    CONSTRAINT events_pkey PRIMARY KEY (id),
+                    CONSTRAINT user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id),
+                    CONSTRAINT event_type_id_fkey FOREIGN KEY (event_type_id) REFERENCES event_type(id),
+                    CONSTRAINT operation_id_fkey FOREIGN KEY (operation_id) REFERENCES operation(id));
+
 

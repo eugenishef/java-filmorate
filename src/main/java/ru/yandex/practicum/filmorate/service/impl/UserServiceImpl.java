@@ -5,13 +5,18 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.dal.dao.EventStorage;
 import ru.yandex.practicum.filmorate.dal.dao.FilmStorage;
+import ru.yandex.practicum.filmorate.dto.EventDto;
 import ru.yandex.practicum.filmorate.dto.FilmDto;
 import ru.yandex.practicum.filmorate.dto.UserDto;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.mapper.EventMapper;
 import ru.yandex.practicum.filmorate.mapper.FilmMapper;
 import ru.yandex.practicum.filmorate.mapper.UserMapper;
+import ru.yandex.practicum.filmorate.model.EntityType;
+import ru.yandex.practicum.filmorate.model.Operation;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.dao.UserService;
@@ -28,6 +33,7 @@ import java.util.stream.Collectors;
 public class UserServiceImpl implements UserService {
     final UserStorage userStorage;
     final FilmStorage filmStorage;
+    final EventStorage eventStorage;
 
     static final String USER_NOT_FOUND_MSG = "Пользователь с id = %d не найден";
     static final String FRIEND_NOT_FOUND_MSG = "Пользователь для %s с id = %d не найден";
@@ -76,6 +82,7 @@ public class UserServiceImpl implements UserService {
         }
 
         userStorage.addFriend(userId, friendId);
+        eventStorage.add(userId, friendId, EntityType.FRIEND, Operation.ADD);
         log.info(FRIEND_ADDED_LOG_MSG, friendId, userId);
     }
 
@@ -93,6 +100,7 @@ public class UserServiceImpl implements UserService {
         if (userStorage.deleteFriend(userId, friendId)) {
             log.info(FRIEND_DELETED_LOG_MSG, friendId, userId);
         }
+        eventStorage.add(userId, friendId, EntityType.FRIEND, Operation.REMOVE);
     }
 
     @Override
@@ -142,6 +150,12 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public void deleteUserById(Long id) {
+        getUserById(id);
+        userStorage.deleteUser(id);
+    }
+
+    @Override
     public Collection<FilmDto> getRecommendations(Long id) {
         Set<Integer> usersFilms = userStorage.findUsersFilms(id);
         List<Long> collaborators = new ArrayList<>();
@@ -173,5 +187,14 @@ public class UserServiceImpl implements UserService {
             }
         }
         return recommendedFilms;
+    }
+
+    @Override
+    public Collection<EventDto> getFeedById(Long id) {
+        getUserById(id);
+        return eventStorage.findById(id).stream()
+                .map(EventMapper::modelToDto)
+                .collect(Collectors.toList());
+
     }
 }

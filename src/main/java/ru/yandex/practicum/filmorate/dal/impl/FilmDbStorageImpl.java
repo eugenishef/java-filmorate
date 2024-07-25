@@ -254,4 +254,14 @@ public class FilmDbStorageImpl implements FilmStorage {
 
         return jdbc.query(query, filmExtractor, directorId);
     }
+
+    @Override
+    public void deleteFilm(Integer filmId) {
+        String query = "DELETE FROM film_director WHERE film_id = ?;" +
+                "DELETE FROM film_genre  WHERE film_id = ?;" +
+                "DELETE FROM film_userlikes  WHERE film_id = ?;" +
+                "DELETE FROM review  WHERE film_id = ?;" +
+                "DELETE FROM film WHERE id = ?";
+        jdbc.update(query, filmId, filmId, filmId, filmId, filmId);
+    }
 }
