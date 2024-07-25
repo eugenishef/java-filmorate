@@ -138,4 +138,14 @@ public class UserDbStorageImpl implements UserStorage {
                 "WHERE fu.user_id = ? ", Integer.class, userId));
     }
 
+    @Override
+    public void deleteUser(Long id) {
+        String query = "DELETE FROM user_friends WHERE user_id = ? OR user_friend_id = ?;" +
+                "DELETE FROM film_userlikes WHERE user_id = ?;" +
+                "DELETE FROM review WHERE user_id = ?;" +
+                "DELETE FROM review_userlikes WHERE user_id = ?;" +
+                "DELETE FROM users WHERE id = ?";
+        jdbc.update(query, id, id, id, id, id, id);
+    }
+
 }

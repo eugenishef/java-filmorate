@@ -5,10 +5,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.dal.dao.EventStorage;
 import ru.yandex.practicum.filmorate.dto.FilmDto;
 import ru.yandex.practicum.filmorate.dal.dao.ReviewStorage;
 import ru.yandex.practicum.filmorate.dto.ReviewDto;
 import ru.yandex.practicum.filmorate.mapper.ReviewMapper;
+import ru.yandex.practicum.filmorate.model.EntityType;
+import ru.yandex.practicum.filmorate.model.Operation;
 import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.dao.FilmService;
@@ -29,6 +32,7 @@ public class ReviewServiceImpl implements ReviewService {
     final ReviewStorage reviewStorage;
     final UserService userService;
     final FilmService filmService;
+    final EventStorage eventStorage;
 
     static final String REVIEW_NOT_FOUND_MSG = "Отзыв с id = %d не найден";
     static final String LIKE_ADDED_MSG = "Добавлен лайк пользователя c id = {} к отзыву с reviewId = {}";
@@ -63,6 +67,7 @@ public class ReviewServiceImpl implements ReviewService {
         User user = userService.getUserById(newReview.getUserId());
         FilmDto filmDto = filmService.findFilmById(newReview.getFilmId());
         Review review = reviewStorage.create(newReview);
+        eventStorage.add(user.getId(), Long.valueOf(review.getFilmId()), EntityType.REVIEW, Operation.ADD);
         return ReviewMapper.modelToDto(review);
     }
 
@@ -77,6 +82,8 @@ public class ReviewServiceImpl implements ReviewService {
         oldReview.setUserId(getDefaultIfNull(updReview.getUserId(), oldReview.getUserId()));
         oldReview.setFilmId(getDefaultIfNull(updReview.getFilmId(), oldReview.getFilmId()));
 
+        eventStorage.add(user.getId(), Long.valueOf(oldReview.getFilmId()), EntityType.REVIEW, Operation.UPDATE);
+
         return ReviewMapper.modelToDto(reviewStorage.update(oldReview));
     }
 
@@ -84,6 +91,7 @@ public class ReviewServiceImpl implements ReviewService {
     public void delete(Long reviewId) {
         Review review = getReviewById(reviewId);
         reviewStorage.delete(reviewId);
+        eventStorage.add(review.getUserId(), Long.valueOf(review.getFilmId()), EntityType.REVIEW, Operation.REMOVE);
     }
 
     @Override
@@ -101,12 +109,14 @@ public class ReviewServiceImpl implements ReviewService {
     @Override
     public void addLike(Long reviewId, Long userId) {
         addLikeOrDislike(reviewId, userId, true);
+        eventStorage.add(userId, reviewId, EntityType.LIKE, Operation.ADD);
         log.info(LIKE_ADDED_MSG, userId, reviewId);
     }
 
     @Override
     public void addDislike(Long reviewId, Long userId) {
         addLikeOrDislike(reviewId, userId, false);
+        eventStorage.add(userId, reviewId, EntityType.LIKE, Operation.ADD);
         log.info(DISLIKE_ADDED_MSG, userId, reviewId);
     }
 
@@ -116,6 +126,7 @@ public class ReviewServiceImpl implements ReviewService {
         User user = userService.getUserById(userId);
         boolean isLike = getUserLike(reviewId, userId);
         reviewStorage.deleteLike(reviewId, userId);
+        eventStorage.add(userId, reviewId, EntityType.LIKE, Operation.REMOVE);
     }
 
     @Override
@@ -128,5 +139,6 @@ public class ReviewServiceImpl implements ReviewService {
         } else {
             throw new NotFoundException(String.format(DISLIKE_NOT_FOUND, userId, reviewId));
         }
+        eventStorage.add(userId, reviewId, EntityType.LIKE, Operation.REMOVE);
     }
 }

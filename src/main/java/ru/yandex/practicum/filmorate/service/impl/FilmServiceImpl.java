@@ -12,9 +12,7 @@ import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.mapper.FilmMapper;
 import ru.yandex.practicum.filmorate.mapper.GenreMapper;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.service.dao.FilmService;
 import ru.yandex.practicum.filmorate.dal.dao.FilmStorage;
 import ru.yandex.practicum.filmorate.dal.dao.GenreStorage;
@@ -39,6 +37,7 @@ public class FilmServiceImpl implements FilmService {
     final RatingStorage ratingStorage;
     final GenreStorage genreStorage;
     final DirectorStorage directorStorage;
+    final EventStorage eventStorage;
 
     final UserService userService;
 
@@ -52,6 +51,7 @@ public class FilmServiceImpl implements FilmService {
     static final String TOP_FILMS_MSG = "Список {} наиболее популярных фильмов для вывода: {}";
     static final String COMMON_FILMS_MSG = "Список общих отсортированных по популярности фильмов у пользователей с id = {} и id = {} для вывода: {}";
     static final String DIRECTOR_FILMS_MSG = "Список фильмов режиссера {} отсортированных по {}: {}";
+    static final String DIRECTOR_NOT_FOUND_MSG = "Режиссер с id = %d не найден";
 
     private <T> T getDefaultIfNull(T value, T defaultValue) {
         return value != null ? value : defaultValue;
@@ -95,6 +95,7 @@ public class FilmServiceImpl implements FilmService {
                 .orElseThrow(() -> new ValidationException(new StringBuilder(String.format(RATING_NOT_FOUND_MSG, ratingId))));
 
         validateGenres(newFilm.getGenres());
+        validateDirectors(newFilm.getDirectors());
 
         Film film = filmStorage.create(newFilm);
         return FilmMapper.modelToDto(film);
@@ -112,6 +113,7 @@ public class FilmServiceImpl implements FilmService {
         oldFilm.setDuration(getDefaultIfNull(updFilm.getDuration(), oldFilm.getDuration()));
         oldFilm.setMpa(getDefaultIfNull(updFilm.getMpa(), oldFilm.getMpa()));
         oldFilm.setGenres(getDefaultIfNull(updFilm.getGenres(), oldFilm.getGenres()));
+        oldFilm.setDirectors(getDefaultIfNull(updFilm.getDirectors(), oldFilm.getDirectors()));
 
         return FilmMapper.modelToDto(filmStorage.update(updFilm));
     }
@@ -123,6 +125,7 @@ public class FilmServiceImpl implements FilmService {
         User user = userStorage.findUserById(userId)
                 .orElseThrow(() -> new NotFoundException(String.format(USER_NOT_FOUND_MSG, userId)));
         filmStorage.addLike(filmId, userId);
+        eventStorage.add(userId, Long.valueOf(filmId), EntityType.LIKE, Operation.ADD);
 
         log.info(LIKE_ADDED_MSG, userId, filmId);
     }
@@ -134,6 +137,7 @@ public class FilmServiceImpl implements FilmService {
         User user = userStorage.findUserById(userId)
                 .orElseThrow(() -> new NotFoundException(String.format(USER_NOT_FOUND_MSG, userId)));
         filmStorage.deleteLike(filmId, userId);
+        eventStorage.add(userId, Long.valueOf(filmId), EntityType.LIKE, Operation.REMOVE);
 
         log.info(LIKE_REMOVED_MSG, userId, filmId);
     }
@@ -221,5 +225,26 @@ public class FilmServiceImpl implements FilmService {
                 .stream()
                 .map(FilmMapper::modelToDto)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public void deleteFilmById(Integer id) {
+        findFilmById(id);
+        filmStorage.deleteFilm(id);
+    }
+
+    private void validateDirectors(Collection<Director> directors) {
+        if (directors != null) {
+            Collection<Integer> directorIds = directorStorage.findAll().stream()
+                    .map(Director::getId)
+                    .collect(Collectors.toSet());
+
+            for (Director director : directors) {
+                if (!directorIds.contains(director.getId())) {
+                    throw new ValidationException(new StringBuilder(String.format(DIRECTOR_NOT_FOUND_MSG,
+                            director.getId())));
+                }
+            }
+        }
     }
 }
