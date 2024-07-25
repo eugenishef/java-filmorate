@@ -90,4 +90,10 @@ public class FilmController {
     public List<FilmDto> searchFilms(String query, @RequestParam(defaultValue = "") String by) {
         return filmService.searchFilms(query, by);
     }
+
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    public void deleteFilmById(@PathVariable @Min(1) Integer id) {
+        filmService.deleteFilmById(id);
+    }
 }
