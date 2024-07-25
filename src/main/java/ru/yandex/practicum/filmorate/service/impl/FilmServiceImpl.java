@@ -50,8 +50,8 @@ public class FilmServiceImpl implements FilmService {
     static final String LIKE_REMOVED_MSG = "Удален лайк пользователя c id = {} к фильму с filmId = {}";
     static final String TOP_FILMS_MSG = "Список {} наиболее популярных фильмов для вывода: {}";
     static final String COMMON_FILMS_MSG = "Список общих отсортированных по популярности фильмов у пользователей с id = {} и id = {} для вывода: {}";
-    static final String DIRECTOR_FILMS_MSG = "Список фильмов режиссера {} отсортированных по {}: {}";
     static final String DIRECTOR_NOT_FOUND_MSG = "Режиссер с id = %d не найден";
+    static final String DIRECTOR_FILMS_MSG = "Список фильмов режиссера {} отсортированных по {}: {}";
 
     private <T> T getDefaultIfNull(T value, T defaultValue) {
         return value != null ? value : defaultValue;
