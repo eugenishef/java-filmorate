@@ -12,3 +12,13 @@ INSERT INTO genre(name) VALUES
 ('Триллер'),
 ('Документальный'),
 ('Боевик');
+
+INSERT INTO operation(name) VALUES
+                                ('REMOVE'),
+                                ('ADD'),
+                                ('UPDATE');
+
+INSERT INTO event_type(name) VALUES
+                                 ('LIKE'),
+                                 ('REVIEW'),
+                                 ('FRIEND');

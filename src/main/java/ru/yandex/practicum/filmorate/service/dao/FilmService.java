@@ -27,4 +27,6 @@ public interface FilmService {
     Collection<FilmDto> listFilmsDirector(int directorId, String param);
 
     List<FilmDto> searchFilms(String query, String by);
+
+    void deleteFilmById(Integer id);
 }

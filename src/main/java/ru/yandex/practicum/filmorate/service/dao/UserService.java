@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.service.dao;
 
+import ru.yandex.practicum.filmorate.dto.EventDto;
 import ru.yandex.practicum.filmorate.dto.FilmDto;
 import ru.yandex.practicum.filmorate.dto.UserDto;
 import ru.yandex.practicum.filmorate.model.User;
@@ -27,4 +28,8 @@ public interface UserService {
     Collection<UserDto> getCommonFriends(Long userId, Long otherId);
 
     Collection<FilmDto> getRecommendations(Long id);
+
+    void deleteUserById(Long id);
+
+    Collection<EventDto> getFeedById(Long id);
 }
