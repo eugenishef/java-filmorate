@@ -170,7 +170,6 @@ public class FilmServiceImpl implements FilmService {
         log.debug(TOP_FILMS_MSG, count, topPopularFilms);
 
         return topPopularFilmsDto;
-
     }
 
     @Override
