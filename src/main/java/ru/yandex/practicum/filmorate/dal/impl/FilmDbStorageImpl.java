@@ -52,17 +52,23 @@ public class FilmDbStorageImpl implements FilmStorage {
 
     @Override
     public List<Film> searchFilms(String query, String by) {
-        String baseSql = "SELECT f.*, r.name as rating_name FROM film f " +
-                "LEFT JOIN rating r ON f.rating_id = r.id WHERE (";
-        String directorSql = "f.id IN (SELECT fd.film_id FROM film_director fd " +
-                "JOIN director d ON fd.director_id = d.id " +
-                "WHERE LOWER(d.name) LIKE LOWER(?))";
+        String baseSql = "SELECT f.*, r.name as rating_name, g.id as genre_id, g.name as genre_name, d.id as director_id, d.name as director_name " +
+                "FROM film f " +
+                "LEFT JOIN rating r ON f.rating_id = r.id " +
+                "LEFT JOIN film_genre fg ON f.id = fg.film_id " +
+                "LEFT JOIN genre g ON fg.genre_id = g.id " +
+                "LEFT JOIN film_director fd ON f.id = fd.film_id " +
+                "LEFT JOIN director d ON fd.director_id = d.id " +
+                "WHERE (";
+
+        String titleSql = "LOWER(f.name) LIKE LOWER(?) OR LOWER(f.description) LIKE LOWER(?)";
+        String directorSql = "LOWER(d.name) LIKE LOWER(?)";
 
         List<String> conditions = new ArrayList<>();
         List<Object> params = new ArrayList<>();
 
         if (by.contains("title")) {
-            conditions.add("LOWER(f.name) LIKE LOWER(?) OR LOWER(f.description) LIKE LOWER(?)");
+            conditions.add(titleSql);
             params.add("%" + query + "%");
             params.add("%" + query + "%");
         }
@@ -76,7 +82,8 @@ public class FilmDbStorageImpl implements FilmStorage {
         }
 
         String finalSql = baseSql + String.join(" OR ", conditions) + ")";
-        return jdbc.query(finalSql, filmRowMapper, params.toArray());
+        Collection<Film> films = jdbc.query(finalSql, filmExtractor, params.toArray());
+        return new ArrayList<>(films);
     }
 
     @Override

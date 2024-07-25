@@ -19,16 +19,9 @@ public class FilmExtractor implements ResultSetExtractor<Collection<Film>> {
         Map<Integer, Film> data = new LinkedHashMap<>();
         while (rs.next()) {
             int filmId = rs.getInt("id");
-            if (data.containsKey(filmId)) {
-                Film film = data.get(filmId);
-                Set<Genre> genres = film.getGenres();
-                setGenre(film, genres, rs);
-                Set<Long> userLikes = film.getUserLikes();
-                setLikes(film, userLikes, rs);
-                Set<Director> directors = film.getDirectors();
-                setDirector(film, directors, rs);
-            } else {
-                Film film = Film.builder()
+            Film film = data.get(filmId);
+            if (film == null) {
+                film = Film.builder()
                         .id(filmId)
                         .name(rs.getString("name"))
                         .duration(rs.getInt("duration"))
@@ -36,40 +29,27 @@ public class FilmExtractor implements ResultSetExtractor<Collection<Film>> {
                         .description(rs.getString("description"))
                         .releaseDate(rs.getDate("release_date").toLocalDate())
                         .build();
-                Set<Genre> genres = new HashSet<>();
-                setGenre(film, genres, rs);
-                Set<Long> userLikes = new HashSet<>();
-                setLikes(film, userLikes, rs);
-                Set<Director> directors = new HashSet<>();
-                setDirector(film, directors, rs);
                 data.put(filmId, film);
+            }
+
+            int genreId = rs.getInt("genre_id");
+            if (!rs.wasNull()) {
+                Genre genre = Genre.builder()
+                        .id(genreId)
+                        .name(rs.getString("genre_name"))
+                        .build();
+                film.getGenres().add(genre);
+            }
+
+            int directorId = rs.getInt("director_id");
+            if (!rs.wasNull()) {
+                Director director = Director.builder()
+                        .id(directorId)
+                        .name(rs.getString("director_name"))
+                        .build();
+                film.getDirectors().add(director);
             }
         }
         return data.values();
-    }
-
-    private void setDirector(Film film, Set<Director> directors, ResultSet rs) throws SQLException {
-        if (rs.getInt("director_id") != 0) {
-            directors.add(Director.builder()
-                    .id(rs.getInt("director_id"))
-                    .name(rs.getString("director_name")).build());
-        }
-        film.setDirectors(directors);
-    }
-
-    private void setGenre(Film film, Set<Genre> genres, ResultSet rs) throws SQLException {
-        if (rs.getInt("genre_id") != 0) {
-            genres.add(Genre.builder()
-                    .id(rs.getInt("genre_id"))
-                    .name(rs.getString("genre_name")).build());
-        }
-        film.setGenres(genres);
-    }
-
-    private void setLikes(Film film, Set<Long> userLikes, ResultSet rs) throws SQLException {
-        if (rs.getInt("user_id") != 0) {
-            userLikes.add(rs.getLong("user_id"));
-        }
-        film.setUserLikes(userLikes);
     }
 }
