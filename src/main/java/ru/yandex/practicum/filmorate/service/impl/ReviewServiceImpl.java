@@ -23,9 +23,8 @@ import ru.yandex.practicum.filmorate.validation.ReviewValidator;
 import java.util.Collection;
 import java.util.stream.Collectors;
 
-
-@Slf4j
 @FieldDefaults(level = AccessLevel.PRIVATE)
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ReviewServiceImpl implements ReviewService {

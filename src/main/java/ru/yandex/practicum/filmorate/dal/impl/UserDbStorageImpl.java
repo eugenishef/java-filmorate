@@ -1,6 +1,8 @@
 package ru.yandex.practicum.filmorate.dal.impl;
 
+import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -17,14 +19,15 @@ import java.sql.Statement;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@FieldDefaults(level = AccessLevel.PRIVATE)
+@Slf4j
 @Repository
 @Primary
 @RequiredArgsConstructor
-@Slf4j
 public class UserDbStorageImpl implements UserStorage {
-    private final JdbcTemplate jdbc;
-    private final UserRowMapper userRowMapper;
-    private final UserExtractor userExtractor;
+    final JdbcTemplate jdbc;
+    final UserRowMapper userRowMapper;
+    final UserExtractor userExtractor;
 
     @Override
     public Collection<User> findAll() {

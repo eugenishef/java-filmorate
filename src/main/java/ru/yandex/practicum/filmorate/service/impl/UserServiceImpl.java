@@ -26,8 +26,8 @@ import ru.yandex.practicum.filmorate.validation.UserValidator;
 import java.util.*;
 import java.util.stream.Collectors;
 
-@Slf4j
 @FieldDefaults(level = AccessLevel.PRIVATE)
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {

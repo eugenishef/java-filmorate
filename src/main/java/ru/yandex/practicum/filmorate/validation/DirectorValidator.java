@@ -8,8 +8,8 @@ import ru.yandex.practicum.filmorate.model.Director;
 
 import java.util.Objects;
 
-@Slf4j
 @FieldDefaults(level = AccessLevel.PRIVATE)
+@Slf4j
 public class DirectorValidator {
     static final String NULL_NAME_ERROR = "Имя не может быть пустым";
 
