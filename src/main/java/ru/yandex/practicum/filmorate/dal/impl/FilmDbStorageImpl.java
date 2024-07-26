@@ -23,17 +23,17 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.*;
 
-@Slf4j
 @FieldDefaults(level = AccessLevel.PRIVATE)
+@Slf4j
 @Repository
 @Primary
 @RequiredArgsConstructor
 public class FilmDbStorageImpl implements FilmStorage {
-    private final JdbcTemplate jdbc;
-    private final FilmRowMapper filmRowMapper;
-    private final GenreRowMapper genreRowMapper;
-    private final DirectorRowMapper directorRowMapper;
-    private final FilmExtractor filmExtractor;
+    final JdbcTemplate jdbc;
+    final FilmRowMapper filmRowMapper;
+    final GenreRowMapper genreRowMapper;
+    final DirectorRowMapper directorRowMapper;
+    final FilmExtractor filmExtractor;
 
     private Set<Genre> findFilmGenresIdsByFilmId(Integer filmId) {
         return new HashSet<>(jdbc.query("SELECT g.* FROM film_genre fg, genre g " +

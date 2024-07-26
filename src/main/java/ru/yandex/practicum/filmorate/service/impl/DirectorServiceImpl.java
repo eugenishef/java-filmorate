@@ -16,8 +16,8 @@ import ru.yandex.practicum.filmorate.validation.DirectorValidator;
 import java.util.Collection;
 import java.util.Optional;
 
-@Slf4j
 @FieldDefaults(level = AccessLevel.PRIVATE)
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class DirectorServiceImpl implements DirectorService {

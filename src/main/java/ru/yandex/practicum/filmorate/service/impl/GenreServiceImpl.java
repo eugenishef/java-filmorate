@@ -13,8 +13,8 @@ import ru.yandex.practicum.filmorate.dal.dao.GenreStorage;
 
 import java.util.Collection;
 
-@Slf4j
 @FieldDefaults(level = AccessLevel.PRIVATE)
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class GenreServiceImpl implements GenreService {

@@ -8,8 +8,8 @@ import ru.yandex.practicum.filmorate.exception.ValidationException;
 
 import java.util.Objects;
 
-@Slf4j
 @FieldDefaults(level = AccessLevel.PRIVATE)
+@Slf4j
 public class ReviewValidator {
     static final String NULL_USERID_ERROR = "Пользователь должен быть указан";
     static final String NULL_FILMID_ERROR = "Фильм должен быть указан";

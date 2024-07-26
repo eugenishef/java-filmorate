@@ -12,12 +12,12 @@ import javax.validation.constraints.NotNull;
 import java.util.HashMap;
 import java.util.Map;
 
+@FieldDefaults(level = AccessLevel.PRIVATE)
 @Data
 @Builder
 @EqualsAndHashCode(of = {"reviewId"})
 @NoArgsConstructor
 @AllArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE)
 public class Review {
     long reviewId;
     @NotNull
@@ -25,9 +25,9 @@ public class Review {
     @NotNull
     Boolean isPositive;
     @NotNull
-    Long userId; //User user;
+    Long userId;
     @NotNull
-    Integer filmId; //Film film;
+    Integer filmId;
     @Builder.Default
     Map<Long, Boolean> userLikes = new HashMap<>();
     int useful;

@@ -1,6 +1,8 @@
 package ru.yandex.practicum.filmorate.dal.impl;
 
+import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -13,14 +15,14 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
+@FieldDefaults(level = AccessLevel.PRIVATE)
+@Slf4j
 @Repository
 @Primary
 @RequiredArgsConstructor
-@Slf4j
 public class RatingDbStorageImpl implements RatingStorage {
-
-    private final JdbcTemplate jdbc;
-    private final RatingRowMapper ratingMapper;
+    final JdbcTemplate jdbc;
+    final RatingRowMapper ratingMapper;
 
     @Override
     public Collection<Rating> findAll() {

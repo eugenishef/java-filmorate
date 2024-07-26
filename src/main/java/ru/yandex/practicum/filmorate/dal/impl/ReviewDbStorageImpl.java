@@ -1,6 +1,8 @@
 package ru.yandex.practicum.filmorate.dal.impl;
 
+import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Primary;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -18,13 +20,14 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+@FieldDefaults(level = AccessLevel.PRIVATE)
+@Slf4j
 @Repository
 @Primary
 @RequiredArgsConstructor
-@Slf4j
 public class ReviewDbStorageImpl implements ReviewStorage {
-    private final ReviewRowMapper reviewRowMapper;
-    private final JdbcTemplate jdbc;
+    final ReviewRowMapper reviewRowMapper;
+    final JdbcTemplate jdbc;
 
     static final String REVIEW_DELETED_INFO_MSG = "Отзыв с id = {} удален";
     static final String REVIEW_USERLIKES_DELETED_INFO_MSG = "Оценки отзыва с id = {} удалены";

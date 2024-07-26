@@ -9,8 +9,8 @@ import ru.yandex.practicum.filmorate.model.User;
 import java.time.LocalDate;
 import java.util.Objects;
 
-@Slf4j
 @FieldDefaults(level = AccessLevel.PRIVATE)
+@Slf4j
 public class UserValidator {
     static final String NULL_EMAIL_ERROR = "Электронная почта не может быть пустой";
     static final String NULL_LOGIN_ERROR = "Логин не может быть пустым";

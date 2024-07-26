@@ -7,7 +7,6 @@ import java.time.Instant;
 
 
 @FieldDefaults(level = AccessLevel.PRIVATE)
-@ToString()
 @Data
 @Builder
 @NoArgsConstructor

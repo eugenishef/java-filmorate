@@ -49,6 +49,11 @@ public class FilmExtractor implements ResultSetExtractor<Collection<Film>> {
                         .build();
                 film.getDirectors().add(director);
             }
+
+            long userId = rs.getLong("user_id");
+            if (!rs.wasNull()) {
+                film.getUserLikes().add(userId);
+            }
         }
         return data.values();
     }

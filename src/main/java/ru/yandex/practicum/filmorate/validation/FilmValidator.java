@@ -10,8 +10,8 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 
-@Slf4j
 @FieldDefaults(level = AccessLevel.PRIVATE)
+@Slf4j
 public class FilmValidator {
     static final int MAX_FILM_DESCRIPTION_LENGTH = 200;
     static final LocalDate MIN_FILM_RELEASE_DATE = LocalDate.of(1895, 12, 28);
